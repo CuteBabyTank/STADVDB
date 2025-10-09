@@ -20,13 +20,11 @@
             --card-bg: #1e293b;
             --sidebar-bg: #0f172a;
         }
-        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -34,13 +32,11 @@
             min-height: 100vh;
             padding-bottom: 80px;
         }
-        
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
-        
         header {
             background: var(--sidebar-bg);
             padding: 20px;
@@ -49,34 +45,28 @@
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
         .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
         .logo {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-        
         .logo i {
             font-size: 28px;
             color: var(--accent);
         }
-        
         .logo h1 {
             font-size: 24px;
             font-weight: 700;
         }
-        
         .logo p {
             font-size: 14px;
             color: var(--text-secondary);
         }
-        
         .tabs {
             display: flex;
             gap: 10px;
@@ -85,7 +75,6 @@
             border-radius: 12px;
             margin-bottom: 30px;
         }
-        
         .tab {
             padding: 12px 24px;
             border-radius: 8px;
@@ -96,23 +85,19 @@
             gap: 8px;
             transition: all 0.3s ease;
         }
-        
         .tab:hover {
             background: rgba(59, 130, 246, 0.2);
         }
-        
         .tab.active {
             background: var(--primary);
             color: white;
         }
-        
         .tables-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
-        
         .table-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
@@ -121,25 +106,21 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
         .table-card:hover {
             border-color: var(--accent);
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
         }
-        
         .table-card.selected {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
         }
-        
         .table-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
         }
-        
         .table-icon {
             width: 40px;
             height: 40px;
@@ -151,45 +132,37 @@
             font-size: 18px;
             color: var(--accent);
         }
-        
         .table-info {
             flex: 1;
             margin-left: 15px;
         }
-        
         .table-name {
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 5px;
         }
-        
         .table-type {
             font-size: 12px;
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        
         .table-details {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
             font-size: 13px;
         }
-        
         .detail-item {
             display: flex;
             justify-content: space-between;
         }
-        
         .detail-label {
             color: var(--text-secondary);
         }
-        
         .detail-value {
             font-weight: 500;
         }
-        
         .table-data {
             background: var(--card-bg);
             border: 1px solid var(--border);
@@ -197,14 +170,12 @@
             padding: 20px;
             margin-top: 30px;
         }
-        
         .table-data-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-        
         .table-data-title {
             font-size: 20px;
             font-weight: 600;
@@ -212,7 +183,6 @@
             align-items: center;
             gap: 10px;
         }
-        
         .clear-btn {
             background: var(--card-bg);
             border: 1px solid var(--border);
@@ -222,18 +192,15 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
         .clear-btn:hover {
             background: rgba(245, 158, 11, 0.2);
             color: var(--warning);
             border-color: var(--warning);
         }
-        
         .data-table {
             width: 100%;
             border-collapse: collapse;
         }
-        
         .data-table th {
             text-align: left;
             padding: 12px 15px;
@@ -244,22 +211,18 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
         .data-table td {
             padding: 12px 15px;
             border-bottom: 1px solid var(--border);
             color: var(--text);
             font-size: 14px;
         }
-        
         .data-table tr:last-child td {
             border-bottom: none;
         }
-        
         .data-table tr:hover td {
             background: rgba(37, 99, 235, 0.1);
         }
-        
         .runtime-footer {
             position: fixed;
             bottom: 0;
@@ -273,55 +236,45 @@
             justify-content: space-between;
             align-items: center;
         }
-        
         .runtime-info {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-        
         .runtime-item {
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 14px;
         }
-        
         .runtime-label {
             color: var(--text-secondary);
         }
-        
         .runtime-value {
             font-family: 'Courier New', monospace;
             font-weight: 600;
             color: var(--success);
         }
-        
         .status-indicator {
             width: 8px;
             height: 8px;
             border-radius: 50%;
             margin-right: 8px;
         }
-        
         .status-running {
             background: var(--warning);
             box-shadow: 0 0 8px var(--warning);
         }
-        
         .status-ready {
             background: var(--success);
         }
-        
         .status-completed {
             background: var(--success);
         }
-        
         .status-error {
             background: var(--danger);
             box-shadow: 0 0 8px var(--danger);
         }
-        
         .run-btn {
             background: var(--primary);
             color: white;
@@ -335,26 +288,22 @@
             gap: 8px;
             transition: all 0.3s ease;
         }
-        
         .run-btn:hover:not(:disabled) {
             background: var(--primary-dark);
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
-        
         .run-btn:disabled {
             background: var(--border);
             cursor: not-allowed;
             opacity: 0.6;
         }
-        
         .reports-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
-        
         .report-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
@@ -363,20 +312,17 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
         .report-card:hover {
             border-color: var(--accent);
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
         }
-        
         .report-header {
             display: flex;
             align-items: center;
             gap: 12px;
             margin-bottom: 15px;
         }
-        
         .report-number {
             width: 32px;
             height: 32px;
@@ -388,85 +334,71 @@
             font-weight: 700;
             font-size: 14px;
         }
-        
         .report-title {
             font-size: 18px;
             font-weight: 600;
         }
-        
         .report-description {
             color: var(--text-secondary);
             font-size: 14px;
             line-height: 1.5;
         }
-        
-        .error-logs {
+        .compile-logs {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 20px;
             margin-top: 20px;
         }
-        
-        .error-header {
+        .compile-header {
             display: flex;
             align-items: center;
             gap: 10px;
             margin-bottom: 20px;
         }
-        
-        .error-title {
+        .compile-title {
             font-size: 20px;
             font-weight: 600;
         }
-        
-        .error-log {
+        .compile-log {
             background: rgba(239, 68, 68, 0.1);
             border-left: 3px solid var(--danger);
             padding: 15px;
             margin-bottom: 10px;
             border-radius: 0 8px 8px 0;
         }
-        
-        .error-timestamp {
+        .compile-timestamp {
             color: var(--text-secondary);
             font-size: 12px;
             margin-bottom: 5px;
         }
-        
-        .error-message {
+        .compile-message {
             color: var(--danger);
             font-family: 'Courier New', monospace;
             font-size: 13px;
             white-space: pre-wrap;
         }
-        
         .hidden {
             display: none;
         }
-        
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
                 gap: 15px;
                 text-align: center;
             }
-            
             .tabs {
                 flex-wrap: wrap;
                 justify-content: center;
             }
-            
             .runtime-footer {
                 flex-direction: column;
                 gap: 15px;
                 text-align: center;
             }
-            
             .runtime-info {
                 justify-content: center;
             }
-            
             .reports-grid {
                 grid-template-columns: 1fr;
             }
@@ -493,7 +425,6 @@
                 </div>
             </div>
         </header>
-
         <div class="tabs">
             <div class="tab active" data-tab="tables">
                 <i class="fas fa-table"></i>
@@ -503,12 +434,11 @@
                 <i class="fas fa-file-alt"></i>
                 Reports
             </div>
-            <div class="tab" data-tab="errors">
-                <i class="fas fa-exclamation-triangle"></i>
-                Runtime Errors
+            <div class="tab" data-tab="compile">
+                <i class="fas fa-code"></i>
+                Compile Time Errors
             </div>
         </div>
-
         <!-- Tables View -->
         <div id="tables-view" class="tab-content">
             <div class="tables-grid">
@@ -542,7 +472,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="table-card" data-table="dim_district">
                     <div class="table-header">
                         <div class="table-icon">
@@ -572,7 +501,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="table-card" data-table="dim_client">
                     <div class="table-header">
                         <div class="table-icon">
@@ -602,7 +530,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="table-card" data-table="dim_account">
                     <div class="table-header">
                         <div class="table-icon">
@@ -632,7 +559,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="table-card" data-table="dim_loan">
                     <div class="table-header">
                         <div class="table-icon">
@@ -662,7 +588,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="table-card" data-table="dim_card">
                     <div class="table-header">
                         <div class="table-icon">
@@ -692,7 +617,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Fact Tables -->
                 <div class="table-card" data-table="fact_orders">
                     <div class="table-header">
@@ -723,7 +647,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="table-card" data-table="fact_trans">
                     <div class="table-header">
                         <div class="table-icon">
@@ -754,7 +677,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- Selected Table Data -->
             <div id="table-data" class="table-data hidden">
                 <div class="table-data-header">
@@ -776,7 +698,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Reports View -->
         <div id="reports-view" class="tab-content hidden">
             <div class="reports-grid">
@@ -789,7 +710,6 @@
                         Aggregated cash flows across time hierarchy (daily → monthly → quarterly → yearly)
                     </div>
                 </div>
-                
                 <div class="report-card" data-report="drilldown">
                     <div class="report-header">
                         <div class="report-number">2</div>
@@ -799,7 +719,6 @@
                         Navigate from region → district → account level for detailed analysis
                     </div>
                 </div>
-                
                 <div class="report-card" data-report="slice">
                     <div class="report-header">
                         <div class="report-number">3</div>
@@ -809,7 +728,6 @@
                         Filter transactions on a single dimension (e.g., specific k_symbol like 'SIPO' or 'LEASING')
                     </div>
                 </div>
-                
                 <div class="report-card" data-report="dice">
                     <div class="report-header">
                         <div class="report-number">4</div>
@@ -819,7 +737,6 @@
                         Filter across multiple dimensions simultaneously (e.g., region + time period + transaction type)
                     </div>
                 </div>
-                
                 <div class="report-card" data-report="pivot">
                     <div class="report-header">
                         <div class="report-number">5</div>
@@ -831,40 +748,38 @@
                 </div>
             </div>
         </div>
-
-        <!-- Runtime Errors View -->
-        <div id="errors-view" class="tab-content hidden">
-            <div class="error-logs">
-                <div class="error-header">
-                    <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
-                    <div class="error-title">Runtime Error Logs</div>
+        <!-- Compile Time Errors View -->
+        <div id="compile-view" class="tab-content hidden">
+            <div class="compile-logs">
+                <div class="compile-header">
+                    <i class="fas fa-code" style="color: var(--danger);"></i>
+                    <div class="compile-title">Compile Time Error Logs</div>
                 </div>
-                <div id="error-logs-container">
-                    <div class="error-log">
-                        <div class="error-timestamp">2024-01-15 14:32:18 UTC</div>
-                        <div class="error-message">ERROR 1205 (HY000): Lock wait timeout exceeded; try restarting transaction</div>
+                <div id="compile-logs-container">
+                    <div class="compile-log">
+                        <div class="compile-timestamp">2024-01-15 14:32:18 UTC</div>
+                        <div class="compile-message">ERROR 1072 (42000): Key column 'district_key' doesn't exist in table 'dim_client'</div>
                     </div>
-                    <div class="error-log">
-                        <div class="error-timestamp">2024-01-15 13:45:02 UTC</div>
-                        <div class="error-message">ERROR 1062 (23000): Duplicate entry '2001' for key 'dim_account.account_id'</div>
+                    <div class="compile-log">
+                        <div class="compile-timestamp">2024-01-15 13:45:02 UTC</div>
+                        <div class="compile-message">ERROR 1061 (42000): Duplicate key name 'account_id' in table 'dim_account'</div>
                     </div>
-                    <div class="error-log">
-                        <div class="error-timestamp">2024-01-15 12:18:33 UTC</div>
-                        <div class="error-message">ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`bank_dwh`.`fact_trans`, CONSTRAINT `fact_trans_ibfk_1` FOREIGN KEY (`account_key`) REFERENCES `dim_account` (`account_key`))</div>
+                    <div class="compile-log">
+                        <div class="compile-timestamp">2024-01-15 12:18:33 UTC</div>
+                        <div class="compile-message">ERROR 1215 (HY000): Cannot add foreign key constraint 'fact_trans_ibfk_1' - referenced table 'dim_account' not found</div>
                     </div>
-                    <div class="error-log">
-                        <div class="error-timestamp">2024-01-15 11:05:47 UTC</div>
-                        <div class="error-message">ERROR 2013 (HY000): Lost connection to MySQL server during query</div>
+                    <div class="compile-log">
+                        <div class="compile-timestamp">2024-01-15 11:05:47 UTC</div>
+                        <div class="compile-message">ERROR 1064 (42000): You have an error in your SQL syntax near 'FOREIGN KEY (trans_date_key) REFERENCES dim_date(date_key)'</div>
                     </div>
-                    <div class="error-log">
-                        <div class="error-timestamp">2024-01-15 10:22:15 UTC</div>
-                        <div class="error-message">ERROR 1114 (HY000): The table 'fact_financials' is full</div>
+                    <div class="compile-log">
+                        <div class="compile-timestamp">2024-01-15 10:22:15 UTC</div>
+                        <div class="compile-message">ERROR 1146 (42000): Table 'financedata.trans' doesn't exist - referenced in dim_date population query</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
     <div class="runtime-footer">
         <div class="runtime-info">
             <div class="runtime-item">
@@ -883,7 +798,6 @@
             Run Query
         </button>
     </div>
-
     <script>
         // Tab switching
         document.querySelectorAll('.tab').forEach(tab => {
@@ -892,18 +806,15 @@
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                 // Add active class to clicked tab
                 tab.classList.add('active');
-                
                 // Hide all tab contents
                 document.querySelectorAll('.tab-content').forEach(content => {
                     content.classList.add('hidden');
                 });
-                
                 // Show corresponding tab content
                 const tabName = tab.getAttribute('data-tab');
                 document.getElementById(`${tabName}-view`).classList.remove('hidden');
             });
         });
-
         // Table selection
         let selectedTable = null;
         document.querySelectorAll('.table-card').forEach(card => {
@@ -913,20 +824,17 @@
                 // Add selected class to clicked card
                 card.classList.add('selected');
                 selectedTable = card.getAttribute('data-table');
-                
                 // Show table data
                 displayTableData(selectedTable);
                 document.getElementById('table-data').classList.remove('hidden');
             });
         });
-
         // Clear selection
         document.getElementById('clear-selection').addEventListener('click', () => {
             document.querySelectorAll('.table-card').forEach(c => c.classList.remove('selected'));
             document.getElementById('table-data').classList.add('hidden');
             selectedTable = null;
         });
-
         // Report selection
         document.querySelectorAll('.report-card').forEach(card => {
             card.addEventListener('click', () => {
@@ -934,7 +842,6 @@
                 runReportQuery(reportType);
             });
         });
-
         // Mock table data based on the database schema
         const tableData = {
             'dim_date': {
@@ -1002,22 +909,17 @@
                 ]
             }
         };
-
         function displayTableData(tableName) {
             const tableInfo = tableData[tableName];
             if (!tableInfo) return;
-            
             const headers = document.getElementById('table-headers');
             const body = document.getElementById('table-body');
             const tableNameElement = document.getElementById('selected-table-name');
-            
             // Set table name
             tableNameElement.textContent = tableName;
-            
             // Clear existing content
             headers.innerHTML = '';
             body.innerHTML = '';
-            
             // Create headers
             const headerRow = document.createElement('tr');
             tableInfo.columns.forEach(column => {
@@ -1026,7 +928,6 @@
                 headerRow.appendChild(th);
             });
             headers.appendChild(headerRow);
-            
             // Create data rows
             tableInfo.data.forEach(rowData => {
                 const tr = document.createElement('tr');
@@ -1038,7 +939,6 @@
                 body.appendChild(tr);
             });
         }
-
         // Runtime counter
         let runtimeSeconds = 0;
         let runtimeInterval = null;
@@ -1047,7 +947,6 @@
         const footerStatus = document.getElementById('footer-status');
         const statusIndicator = document.getElementById('status-indicator');
         const runBtn = document.getElementById('run-query');
-
         function updateRuntime() {
             const hours = Math.floor(runtimeSeconds / 3600);
             const minutes = Math.floor((runtimeSeconds % 3600) / 60);
@@ -1055,27 +954,22 @@
             document.getElementById('runtime').textContent = 
                 `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
-
         function runReportQuery(reportType) {
             if (isRunning) return;
-            
             isRunning = true;
             runBtn.disabled = true;
             statusText.textContent = 'Running';
             footerStatus.textContent = `Executing ${reportType} query...`;
             statusIndicator.className = 'status-indicator status-running';
             statusIndicator.style.boxShadow = '0 0 8px #f59e0b';
-            
             // Start runtime counter
             runtimeInterval = setInterval(() => {
                 runtimeSeconds++;
                 updateRuntime();
             }, 1000);
-            
             // Simulate query execution with different success/failure rates
             const successRate = Math.random();
             const delay = 2000 + Math.random() * 3000;
-            
             setTimeout(() => {
                 if (successRate > 0.3) {
                     // Success case
@@ -1086,30 +980,27 @@
                     statusIndicator.className = 'status-indicator status-completed';
                     statusIndicator.style.boxShadow = '0 0 8px #10b981';
                 } else {
-                    // Error case
+                    // Error case - add to compile errors instead of runtime
                     isRunning = false;
                     runBtn.disabled = false;
-                    statusText.textContent = 'Error';
-                    footerStatus.textContent = `Runtime error in ${reportType} query`;
+                    statusText.textContent = 'Compile Error';
+                    footerStatus.textContent = `Compile error in ${reportType} query`;
                     statusIndicator.className = 'status-indicator status-error';
                     statusIndicator.style.boxShadow = '0 0 8px #ef4444';
-                    
-                    // Add error to logs
-                    const errorLog = document.createElement('div');
-                    errorLog.className = 'error-log';
+                    // Add compile error to logs
+                    const compileLog = document.createElement('div');
+                    compileLog.className = 'compile-log';
                     const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
-                    errorLog.innerHTML = `
-                        <div class="error-timestamp">${timestamp}</div>
-                        <div class="error-message">ERROR 1205 (HY000): Timeout executing ${reportType} query on fact_trans table</div>
+                    compileLog.innerHTML = `
+                        <div class="compile-timestamp">${timestamp}</div>
+                        <div class="compile-message">ERROR 1064 (42000): Syntax error in ${reportType} query - missing semicolon or invalid column reference</div>
                     `;
-                    document.getElementById('error-logs-container').prepend(errorLog);
+                    document.getElementById('compile-logs-container').prepend(compileLog);
                 }
-                
                 clearInterval(runtimeInterval);
-                
                 // Reset after 3 seconds
                 setTimeout(() => {
-                    if (statusText.textContent !== 'Error') {
+                    if (statusText.textContent !== 'Compile Error') {
                         statusText.textContent = 'Ready';
                         footerStatus.textContent = 'Ready';
                         statusIndicator.className = 'status-indicator status-ready';
@@ -1120,7 +1011,6 @@
                 }, 3000);
             }, delay);
         }
-
         runBtn.addEventListener('click', () => {
             runReportQuery('generic');
         });
