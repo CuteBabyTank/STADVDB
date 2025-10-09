@@ -1,3 +1,4 @@
+DROP DATABASE IF EXISTS bank_dwh;
 CREATE DATABASE IF NOT EXISTS `bank_dwh`;
 USE `bank_dwh`;
 
@@ -14,7 +15,7 @@ CREATE TABLE `dim_date` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- populating
-
+/*
 INSERT INTO bank_dwh.dim_date (date_key, full_date, year, quarter, month, day, day_of_week)
 SELECT
     ROW_NUMBER() OVER (ORDER BY newdate) AS date_key,
@@ -33,6 +34,7 @@ FROM (
 -- testing
 SELECT *
 FROM dim_date;
+*/
 
 -- DISTRICT DIMENSION
 DROP TABLE IF EXISTS `dim_district`;
@@ -51,6 +53,7 @@ CREATE TABLE `dim_district` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- populate
+/*
 INSERT INTO bank_dwh.dim_district (
     district_id,
     district_name,
@@ -79,6 +82,7 @@ FROM financedata.district;
 -- test
 select *
 From dim_district;
+*/
 
 -- CLIENT DIMENSION
 DROP TABLE IF EXISTS `dim_client`;
@@ -90,6 +94,7 @@ CREATE TABLE `dim_client` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- populate
+/*
 INSERT INTO bank_dwh.dim_client (client_id, district_key)
 SELECT
     c.client_id,
@@ -101,7 +106,7 @@ JOIN bank_dwh.dim_district d
 -- test
 select*
 FROM dim_client;
-
+*/
 
 -- ACCOUNT DIMENSION
 DROP TABLE IF EXISTS `dim_account`;
@@ -114,7 +119,11 @@ CREATE TABLE `dim_account` (
     FOREIGN KEY (district_key) REFERENCES dim_district(district_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+ALTER TABLE dim_account
+ADD UNIQUE (account_id);
+
 -- populate
+/*
 INSERT INTO bank_dwh.dim_account (account_id, district_key, frequency, account_open_date)
 SELECT
     a.account_id,
@@ -128,6 +137,7 @@ JOIN bank_dwh.dim_district d
 -- test
 select *
 FROM dim_account;
+*/
 
 -- LOAN DIMENSION
 DROP TABLE IF EXISTS `dim_loan`;
@@ -143,6 +153,7 @@ CREATE TABLE `dim_loan` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- populate
+/*
 INSERT INTO bank_dwh.dim_loan (loan_id, account_id, amount, duration, payments, status, start_date)
 SELECT
     loan_id,
@@ -157,7 +168,7 @@ FROM financedata.loan;
 -- test
 Select *
 From dim_loan;
-
+*/
 
 -- CARD DIMENSION
 DROP TABLE IF EXISTS `dim_card`;
@@ -168,6 +179,7 @@ CREATE TABLE `dim_card` (
     issued_date DATE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+/*
 -- populate
 INSERT INTO bank_dwh.dim_card (card_id, type, issued_date)
 SELECT
@@ -179,8 +191,60 @@ FROM financedata.card;
 -- test
 Select *
 From dim_card;
+*/
 
 -- FACT TABLE
+DROP TABLE IF EXISTS `fact_orders`;
+CREATE TABLE `fact_orders` (
+	order_key INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    account_key INT,
+    bank_to VARCHAR(50),
+    account_to VARCHAR(50),
+    amount DOUBLE,
+    k_symbol VARCHAR(100),
+    FOREIGN KEY (account_key) REFERENCES dim_account(account_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- populate
+/*
+INSERT INTO bank_dwh.fact_orders (order_id, account_key, bank_to, account_to, amount, k_symbol)
+SELECT
+    o.order_id,
+    da.account_key,  
+    o.bank_to,
+    o.account_to,
+    o.amount,
+    o.k_symbol
+FROM financedata.orders o
+JOIN bank_dwh.dim_account da
+  ON o.account_id = da.account_id;  
+
+-- test
+Select *
+From fact_orders;
+*/
+
+DROP TABLE IF EXISTS `fact_trans`;
+CREATE TABLE `fact_trans`(
+	trans_key INT AUTO_INCREMENT PRIMARY KEY,
+    trans_id INT,
+    account_key int,
+    trans_date_key INT,
+    trans_type VARCHAR(50),
+    operation VARCHAR(100),
+    amount DOUBLE,
+    balance DOUBLE,
+    k_symbol VARCHAR(100),
+    bank VARCHAR(50),
+    account_no VARCHAR(50),
+    FOREIGN KEY (account_key) REFERENCES dim_account(account_key),
+    FOREIGN KEY (trans_date_key) REFERENCES dim_date(date_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- no populate because it times out
+
+/*
 DROP TABLE IF EXISTS `fact_financials`;
 CREATE TABLE `fact_financials` (
     fact_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -258,3 +322,5 @@ LEFT JOIN bank_dwh.dim_date ddate
 -- test
 Select *
 From fact_financials;
+*/
+
