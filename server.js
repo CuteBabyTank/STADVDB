@@ -14,7 +14,7 @@ app.use(express.static(path.join(__dirname)));
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root', // Replace with your MySQL username
-    password: '', // Replace with your MySQL password
+    password: 'Newpassword123?', // Replace with your MySQL password
     database: 'bank_dwh' // Replace with your database name
 });
 
@@ -40,7 +40,7 @@ app.get('/api/table/:tableName', (req, res) => {
     // Define specific queries for each table
     switch(tableName) {
         case 'dim_date':
-            query = 'SELECT date_key, full_date, year, quarter, month, day, day_of_week FROM dim_date';
+            query = 'SELECT date_key, DATE_FORMAT(full_date, "%Y-%m-%d") as full_date, year, quarter, month, day, day_of_week FROM dim_date';
             break;
         case 'dim_district':
             query = 'SELECT district_key, district_id, district_name, region, inhabitants, nocities, ratio_urbaninhabitants, average_salary, unemployment, noentrepreneur, nocrimes FROM dim_district';
@@ -49,13 +49,13 @@ app.get('/api/table/:tableName', (req, res) => {
             query = 'SELECT client_key, client_id, district_key FROM dim_client';
             break;
         case 'dim_account':
-            query = 'SELECT account_key, account_id, district_key, frequency, account_open_date FROM dim_account';
+            query = 'SELECT account_key, account_id, district_key, frequency, DATE_FORMAT(account_open_date, "%Y-%m-%d") as account_open_date FROM dim_account';
             break;
         case 'dim_loan':
-            query = 'SELECT loan_key, loan_id, account_id, amount, duration, payments, status, start_date FROM dim_loan';
+            query = 'SELECT loan_key, loan_id, account_id, amount, duration, payments, status, DATE_FORMAT(start_date, "%Y-%m-%d") as start_date FROM dim_loan';
             break;
         case 'dim_card':
-            query = 'SELECT card_key, card_id, type, issued_date FROM dim_card';
+            query = 'SELECT card_key, card_id, type, DATE_FORMAT(issued_date, "%Y-%m-%d") as issued_date FROM dim_card';
             break;
         case 'fact_orders':
             query = 'SELECT order_key, order_id, account_key, bank_to, account_to, amount, k_symbol FROM fact_orders';
@@ -85,6 +85,7 @@ app.post('/api/reports/rollup', (req, res) => {
             d.year,
             d.quarter,
             d.month,
+            DATE_FORMAT(d.full_date, "%Y-%m-%d") as formatted_date,
             SUM(t.amount) as total_amount,
             COUNT(*) as transaction_count
         FROM fact_trans t
