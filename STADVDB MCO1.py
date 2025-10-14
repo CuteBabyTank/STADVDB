@@ -6,14 +6,14 @@ from sqlalchemy import create_engine
 SOURCE_DB = {
     "host": "localhost",
     "user": "root",
-    "password": "admin12345",
+    "password": "Newpassword123?",
     "database": "financedata"
 }
 
 TARGET_DB = {
     "host": "localhost",
     "user": "root",
-    "password": "admin12345",
+    "password": "Newpassword123?",
     "database": "bank_dwh"
 }
 
@@ -53,7 +53,7 @@ def replace_nulls(df):
         if pd.api.types.is_string_dtype(df[col]): # String > Unknown
             df[col] = df[col].fillna("Unknown")
         elif pd.api.types.is_numeric_dtype(df[col]): # Numeric > -1 
-            df[col] = df[col].fillna(-1)
+            df[col] = df[col].fillna(0)
         elif pd.api.types.is_datetime64_any_dtype(df[col]): # Date > 9999-01-01
             df[col] = df[col].fillna(pd.Timestamp("9999-01-01"))
         else: # Used for VARCHAR since it returns an object rather than string
