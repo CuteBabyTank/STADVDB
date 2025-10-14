@@ -842,84 +842,70 @@
                 runReportQuery(reportType);
             });
         });
-        // Mock table data based on the database schema
-        const tableData = {
-            'dim_date': {
-                columns: ['date_key', 'full_date', 'year', 'quarter', 'month', 'day', 'day_of_week'],
-                data: [
-                    [1, '2024-01-01', 2024, 1, 1, 1, 'Monday'],
-                    [2, '2024-01-02', 2024, 1, 1, 2, 'Tuesday'],
-                    [3, '2024-01-03', 2024, 1, 1, 3, 'Wednesday']
-                ]
-            },
-            'dim_district': {
-                columns: ['district_key', 'district_id', 'district_name', 'region', 'inhabitants', 'nocities', 'ratio_urbaninhabitants', 'average_salary', 'unemployment', 'noentrepreneur', 'nocrimes'],
-                data: [
-                    [1, 1, 'Prague', 'Central Bohemia', 1200000, 12, 0.85, 35000, 2.1, 1500, 2500],
-                    [2, 2, 'Brno', 'South Moravia', 400000, 8, 0.78, 32000, 2.8, 800, 1800],
-                    [3, 3, 'Ostrava', 'Moravian-Silesian', 300000, 6, 0.72, 28000, 4.2, 600, 2200]
-                ]
-            },
-            'dim_client': {
-                columns: ['client_key', 'client_id', 'district_key'],
-                data: [
-                    [1, 1001, 1],
-                    [2, 1002, 2],
-                    [3, 1003, 3]
-                ]
-            },
-            'dim_account': {
-                columns: ['account_key', 'account_id', 'district_key', 'frequency', 'account_open_date'],
-                data: [
-                    [1, 2001, 1, 'monthly', '2023-01-15'],
-                    [2, 2002, 2, 'weekly', '2023-02-20'],
-                    [3, 2003, 3, 'daily', '2023-03-10']
-                ]
-            },
-            'dim_loan': {
-                columns: ['loan_key', 'loan_id', 'account_id', 'amount', 'duration', 'payments', 'status', 'start_date'],
-                data: [
-                    [1, 3001, 2001, 25000.00, 60, 465.25, 'A', '2023-06-15'],
-                    [2, 3002, 2002, 18500.00, 48, 428.75, 'B', '2023-08-20'],
-                    [3, 3003, 2003, 32000.00, 72, 512.50, 'A', '2023-09-05']
-                ]
-            },
-            'dim_card': {
-                columns: ['card_key', 'card_id', 'type', 'issued_date'],
-                data: [
-                    [1, 4001, 'classic', '2023-04-10'],
-                    [2, 4002, 'gold', '2023-05-15'],
-                    [3, 4003, 'platinum', '2023-07-20']
-                ]
-            },
-            'fact_orders': {
-                columns: ['order_key', 'order_id', 'account_key', 'bank_to', 'account_to', 'amount', 'k_symbol'],
-                data: [
-                    [1, 5001, 1, 'CZ0000000000', '2001', 250.00, 'SIPO'],
-                    [2, 5002, 1, 'CZ1111111111', '2002', 75.50, 'LEASING'],
-                    [3, 5003, 2, 'CZ2222222222', '2003', 1200.00, 'INSURANCE']
-                ]
-            },
-            'fact_trans': {
-                columns: ['trans_key', 'trans_id', 'account_key', 'trans_date_key', 'trans_type', 'operation', 'amount', 'balance', 'k_symbol', 'bank', 'account_no'],
-                data: [
-                    [1, 6001, 1, 1, 'credit', 'cash deposit', 250.00, 2540.75, '', '', ''],
-                    [2, 6002, 1, 2, 'debit', 'cash withdrawal', 75.50, 2465.25, '', '', ''],
-                    [3, 6003, 2, 3, 'credit', 'transfer', 1200.00, 3090.25, 'TRANSFER', 'CZ3333333333', '2001']
-                ]
+        // Replace the mock tableData with actual API calls
+        async function fetchTableData(tableName) {
+            try {
+                // Show loading state
+                const statusText = document.getElementById('status-text');
+                const footerStatus = document.getElementById('footer-status');
+                const statusIndicator = document.getElementById('status-indicator');
+                
+                statusText.textContent = 'Loading';
+                footerStatus.textContent = `Loading ${tableName} data...`;
+                statusIndicator.className = 'status-indicator status-running';
+                
+                const response = await fetch(`http://localhost:3000/api/table/${tableName}`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch table data');
+                }
+                
+                // Reset status after successful load
+                statusText.textContent = 'Ready';
+                footerStatus.textContent = 'Ready';
+                statusIndicator.className = 'status-indicator status-ready';
+                
+                return {
+                    columns: data.length > 0 ? Object.keys(data[0]) : [],
+                    data: data.map(row => Object.values(row))
+                };
+            } catch (error) {
+                // Handle error state
+                console.error('Error fetching table data:', error);
+                statusText.textContent = 'Error';
+                footerStatus.textContent = error.message;
+                statusIndicator.className = 'status-indicator status-error';
+                
+                // Add to compile logs
+                const compileLog = document.createElement('div');
+                compileLog.className = 'compile-log';
+                const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+                compileLog.innerHTML = `
+                    <div class="compile-timestamp">${timestamp}</div>
+                    <div class="compile-message">ERROR: Failed to fetch ${tableName} - ${error.message}</div>
+                `;
+                document.getElementById('compile-logs-container').prepend(compileLog);
+                
+                return null;
             }
-        };
-        function displayTableData(tableName) {
-            const tableInfo = tableData[tableName];
+        }
+
+        async function displayTableData(tableName) {
+            const tableInfo = await fetchTableData(tableName);
             if (!tableInfo) return;
+            
             const headers = document.getElementById('table-headers');
             const body = document.getElementById('table-body');
             const tableNameElement = document.getElementById('selected-table-name');
+
             // Set table name
             tableNameElement.textContent = tableName;
+
             // Clear existing content
             headers.innerHTML = '';
             body.innerHTML = '';
+
             // Create headers
             const headerRow = document.createElement('tr');
             tableInfo.columns.forEach(column => {
@@ -928,6 +914,7 @@
                 headerRow.appendChild(th);
             });
             headers.appendChild(headerRow);
+
             // Create data rows
             tableInfo.data.forEach(rowData => {
                 const tr = document.createElement('tr');
@@ -939,6 +926,83 @@
                 body.appendChild(tr);
             });
         }
+
+        async function runReportQuery(reportType) {
+            if (isRunning) return;
+            isRunning = true;
+            runBtn.disabled = true;
+            statusText.textContent = 'Running';
+            footerStatus.textContent = `Executing ${reportType} query...`;
+            statusIndicator.className = 'status-indicator status-running';
+            statusIndicator.style.boxShadow = '0 0 8px #f59e0b';
+
+            // Start runtime counter
+            runtimeInterval = setInterval(() => {
+                runtimeSeconds++;
+                updateRuntime();
+            }, 1000);
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/reports/${reportType}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Success case
+                    isRunning = false;
+                    runBtn.disabled = false;
+                    statusText.textContent = 'Completed';
+                    footerStatus.textContent = `${reportType} query completed successfully`;
+                    statusIndicator.className = 'status-indicator status-completed';
+                    statusIndicator.style.boxShadow = '0 0 8px #10b981';
+
+                    // Display results in the table
+                    const tableInfo = {
+                        columns: Object.keys(data[0] || {}),
+                        data: data.map(row => Object.values(row))
+                    };
+                    displayQueryResults(tableInfo);
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                // Error case
+                isRunning = false;
+                runBtn.disabled = false;
+                statusText.textContent = 'Error';
+                footerStatus.textContent = `Error in ${reportType} query`;
+                statusIndicator.className = 'status-indicator status-error';
+                statusIndicator.style.boxShadow = '0 0 8px #ef4444';
+
+                // Add compile error to logs
+                const compileLog = document.createElement('div');
+                compileLog.className = 'compile-log';
+                const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+                compileLog.innerHTML = `
+                    <div class="compile-timestamp">${timestamp}</div>
+                    <div class="compile-message">ERROR: ${error.message}</div>
+                `;
+                document.getElementById('compile-logs-container').prepend(compileLog);
+            }
+
+            clearInterval(runtimeInterval);
+            // Reset after 3 seconds
+            setTimeout(() => {
+                if (statusText.textContent !== 'Error') {
+                    statusText.textContent = 'Ready';
+                    footerStatus.textContent = 'Ready';
+                    statusIndicator.className = 'status-indicator status-ready';
+                    statusIndicator.style.boxShadow = 'none';
+                    runtimeSeconds = 0;
+                    updateRuntime();
+                }
+            }, 3000);
+        }
+
         // Runtime counter
         let runtimeSeconds = 0;
         let runtimeInterval = null;
@@ -953,63 +1017,6 @@
             const seconds = runtimeSeconds % 60;
             document.getElementById('runtime').textContent = 
                 `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
-        function runReportQuery(reportType) {
-            if (isRunning) return;
-            isRunning = true;
-            runBtn.disabled = true;
-            statusText.textContent = 'Running';
-            footerStatus.textContent = `Executing ${reportType} query...`;
-            statusIndicator.className = 'status-indicator status-running';
-            statusIndicator.style.boxShadow = '0 0 8px #f59e0b';
-            // Start runtime counter
-            runtimeInterval = setInterval(() => {
-                runtimeSeconds++;
-                updateRuntime();
-            }, 1000);
-            // Simulate query execution with different success/failure rates
-            const successRate = Math.random();
-            const delay = 2000 + Math.random() * 3000;
-            setTimeout(() => {
-                if (successRate > 0.3) {
-                    // Success case
-                    isRunning = false;
-                    runBtn.disabled = false;
-                    statusText.textContent = 'Completed';
-                    footerStatus.textContent = `${reportType} query completed successfully`;
-                    statusIndicator.className = 'status-indicator status-completed';
-                    statusIndicator.style.boxShadow = '0 0 8px #10b981';
-                } else {
-                    // Error case - add to compile errors instead of runtime
-                    isRunning = false;
-                    runBtn.disabled = false;
-                    statusText.textContent = 'Compile Error';
-                    footerStatus.textContent = `Compile error in ${reportType} query`;
-                    statusIndicator.className = 'status-indicator status-error';
-                    statusIndicator.style.boxShadow = '0 0 8px #ef4444';
-                    // Add compile error to logs
-                    const compileLog = document.createElement('div');
-                    compileLog.className = 'compile-log';
-                    const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
-                    compileLog.innerHTML = `
-                        <div class="compile-timestamp">${timestamp}</div>
-                        <div class="compile-message">ERROR 1064 (42000): Syntax error in ${reportType} query - missing semicolon or invalid column reference</div>
-                    `;
-                    document.getElementById('compile-logs-container').prepend(compileLog);
-                }
-                clearInterval(runtimeInterval);
-                // Reset after 3 seconds
-                setTimeout(() => {
-                    if (statusText.textContent !== 'Compile Error') {
-                        statusText.textContent = 'Ready';
-                        footerStatus.textContent = 'Ready';
-                        statusIndicator.className = 'status-indicator status-ready';
-                        statusIndicator.style.boxShadow = 'none';
-                        runtimeSeconds = 0;
-                        updateRuntime();
-                    }
-                }, 3000);
-            }, delay);
         }
         runBtn.addEventListener('click', () => {
             runReportQuery('generic');
