@@ -183,6 +183,14 @@ header {
     width: 100%;
     border-collapse: collapse;
 }
+
+.data-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--card-bg);
+}
+
 .data-table th {
     text-align: left;
     padding: 12px 15px;
@@ -204,6 +212,11 @@ header {
 }
 .data-table tr:hover td {
     background: rgba(37, 99, 235, 0.1);
+}
+.table-responsive {
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: auto;
 }
 .runtime-footer {
     position: fixed;
