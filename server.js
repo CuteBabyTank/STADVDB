@@ -15,7 +15,14 @@ const db = mysql.createConnection({
     host: 'localhost',
     user: 'root', // Replace with your MySQL username
     password: 'Newpassword123?', // Replace with your MySQL password
-    database: 'bank_dwh' // Replace with your database name
+    database: 'bank_dwh', // Replace with your database name
+    // Update settings to handle larger datasets
+    supportBigNumbers: true,
+    bigNumberStrings: true,
+    typeCast: true,
+    multipleStatements: true,
+    // Add setting for larger results
+    maxAllowedPacket: 16777216 // 16MB packet size
 });
 
 // Test database connection
@@ -67,7 +74,7 @@ app.get('/api/table/:tableName', (req, res) => {
             return res.status(400).json({ error: 'Invalid table name' });
     }
 
-    query += ' LIMIT 100'; // Add limit for performance
+    query += ' LIMIT 1000';
 
     db.query(query, (err, results) => {
         if (err) {

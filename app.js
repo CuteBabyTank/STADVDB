@@ -23,6 +23,11 @@ document.querySelectorAll('.tab').forEach(tab => {
 let selectedTable = null;
 let selectedReport = null;
 
+// Global variables for pagination
+let currentData = null;
+let currentPage = 1;
+const PAGE_SIZE = 1000;
+
 // Table selection
 document.querySelectorAll('.table-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -131,6 +136,10 @@ async function displayTableData(tableName) {
     const tableInfo = await fetchTableData(tableName);
     if (!tableInfo) return;
     
+    // Store data globally
+    currentData = tableInfo;
+    currentPage = 1;
+
     const headers = document.getElementById('table-headers');
     const body = document.getElementById('table-body');
     const tableNameElement = document.getElementById('selected-table-name');
@@ -151,8 +160,22 @@ async function displayTableData(tableName) {
     });
     headers.appendChild(headerRow);
 
-    // Create data rows
-    tableInfo.data.forEach(rowData => {
+    // Render first page
+    renderPage(currentPage);
+}
+
+function renderPage(page) {
+    if (!currentData) return;
+
+    const body = document.getElementById('table-body');
+    body.innerHTML = '';
+
+    const start = (page - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    const pageData = currentData.data.slice(start, end);
+
+    // Create data rows for current page
+    pageData.forEach(rowData => {
         const tr = document.createElement('tr');
         rowData.forEach(cellData => {
             const td = document.createElement('td');
@@ -161,9 +184,28 @@ async function displayTableData(tableName) {
         });
         body.appendChild(tr);
     });
+
+    // Update scroll event listener
+    const tableContainer = document.querySelector('.table-responsive');
+    tableContainer.onscroll = handleScroll;
+}
+
+function handleScroll(e) {
+    const container = e.target;
+    if (container.scrollHeight - container.scrollTop - container.clientHeight < 50) {
+        // Near bottom, load more data
+        if (currentData && (currentPage * PAGE_SIZE) < currentData.data.length) {
+            currentPage++;
+            renderPage(currentPage);
+        }
+    }
 }
 
 function displayQueryResults(tableInfo) {
+    // Store data globally
+    currentData = tableInfo;
+    currentPage = 1;
+    
     const headers = document.getElementById('report-headers');
     const body = document.getElementById('report-body');
     
@@ -180,21 +222,12 @@ function displayQueryResults(tableInfo) {
     });
     headers.appendChild(headerRow);
 
-    // Create data rows
-    tableInfo.data.forEach(rowData => {
-        const tr = document.createElement('tr');
-        rowData.forEach(cellData => {
-            const td = document.createElement('td');
-            td.textContent = cellData;
-            tr.appendChild(td);
-        });
-        body.appendChild(tr);
-    });
+    // Render first page
+    renderPage(currentPage);
 
     // Show the report data section
     document.getElementById('report-data').classList.remove('hidden');
     
-    // Update report name if available
     if (selectedReport) {
         document.getElementById('selected-report-name').textContent = 
             document.querySelector(`[data-report="${selectedReport}"] .report-title`).textContent + ' Results';
