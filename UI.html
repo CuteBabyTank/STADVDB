@@ -21,11 +21,9 @@
         </header>
         <div class="tabs">
             <div class="tab active" data-tab="tables">
-                <i class="fas fa-table"></i>
                 Tables
             </div>
             <div class="tab" data-tab="reports">
-                <i class="fas fa-file-alt"></i>
                 Reports
             </div>
         </div>
@@ -35,9 +33,6 @@
                 <!-- Dimension Tables -->
                 <div class="table-card" data-table="dim_date">
                     <div class="table-header">
-                        <div class="table-icon">
-                            <i class="fas fa-calendar"></i>
-                        </div>
                         <div class="table-info">
                             <div class="table-name">dim_date</div>
                             <div class="table-type">Dimension</div>
@@ -56,9 +51,6 @@
                 </div>
                 <div class="table-card" data-table="dim_district">
                     <div class="table-header">
-                        <div class="table-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
                         <div class="table-info">
                             <div class="table-name">dim_district</div>
                             <div class="table-type">Dimension</div>
@@ -77,9 +69,6 @@
                 </div>
                 <div class="table-card" data-table="dim_client">
                     <div class="table-header">
-                        <div class="table-icon">
-                            <i class="fas fa-user"></i>
-                        </div>
                         <div class="table-info">
                             <div class="table-name">dim_client</div>
                             <div class="table-type">Dimension</div>
@@ -98,9 +87,6 @@
                 </div>
                 <div class="table-card" data-table="dim_account">
                     <div class="table-header">
-                        <div class="table-icon">
-                            <i class="fas fa-file-invoice-dollar"></i>
-                        </div>
                         <div class="table-info">
                             <div class="table-name">dim_account</div>
                             <div class="table-type">Dimension</div>
@@ -119,9 +105,6 @@
                 </div>
                 <div class="table-card" data-table="dim_loan">
                     <div class="table-header">
-                        <div class="table-icon">
-                            <i class="fas fa-hand-holding-usd"></i>
-                        </div>
                         <div class="table-info">
                             <div class="table-name">dim_loan</div>
                             <div class="table-type">Dimension</div>
@@ -140,9 +123,6 @@
                 </div>
                 <div class="table-card" data-table="dim_card">
                     <div class="table-header">
-                        <div class="table-icon">
-                            <i class="fas fa-credit-card"></i>
-                        </div>
                         <div class="table-info">
                             <div class="table-name">dim_card</div>
                             <div class="table-type">Dimension</div>
@@ -162,9 +142,6 @@
                 <!-- Fact Tables -->
                 <div class="table-card" data-table="fact_orders">
                     <div class="table-header">
-                        <div class="table-icon">
-                            <i class="fas fa-shopping-cart"></i>
-                        </div>
                         <div class="table-info">
                             <div class="table-name">fact_orders</div>
                             <div class="table-type">Fact</div>
@@ -183,9 +160,6 @@
                 </div>
                 <div class="table-card" data-table="fact_trans">
                     <div class="table-header">
-                        <div class="table-icon">
-                            <i class="fas fa-exchange-alt"></i>
-                        </div>
                         <div class="table-info">
                             <div class="table-name">fact_trans</div>
                             <div class="table-type">Fact</div>
@@ -207,7 +181,6 @@
             <div id="table-data" class="table-data hidden">
                 <div class="table-data-header">
                     <div class="table-data-title">
-                        <i class="fas fa-table"></i>
                         <span id="selected-table-name">Table Name</span> Data
                     </div>
                     <button class="clear-btn" id="clear-selection">Clear Selection</button>
@@ -274,14 +247,12 @@
                 </div>
             </div>
             <button class="run-btn" id="run-query" disabled>
-                <i class="fas fa-play"></i>
                 Run Query
             </button>
             <!-- Add table data container for reports -->
             <div id="report-data" class="table-data hidden">
                 <div class="table-data-header">
                     <div class="table-data-title">
-                        <i class="fas fa-file-alt"></i>
                         <span id="selected-report-name">Report Results</span>
                     </div>
                 </div>
