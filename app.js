@@ -164,17 +164,33 @@ async function displayTableData(tableName) {
     renderPage(currentPage);
 }
 
+let isLoading = false; // Add loading state flag
+
+function handleScroll(e) {
+    const container = e.target;
+    const scrollBuffer = 100; // Increase buffer zone
+    
+    if (!isLoading && 
+        container.scrollHeight - container.scrollTop - container.clientHeight < scrollBuffer) {
+        // Near bottom, load more data if available
+        if (currentData && (currentPage * PAGE_SIZE) < currentData.data.length) {
+            isLoading = true;
+            currentPage++;
+            renderPage(currentPage);
+            isLoading = false;
+        }
+    }
+}
+
 function renderPage(page) {
     if (!currentData) return;
 
-    const body = document.getElementById('table-body');
-    body.innerHTML = '';
-
+    const body = document.getElementById(selectedReport ? 'report-body' : 'table-body');
     const start = (page - 1) * PAGE_SIZE;
-    const end = start + PAGE_SIZE;
+    const end = Math.min(start + PAGE_SIZE, currentData.data.length);
     const pageData = currentData.data.slice(start, end);
 
-    // Create data rows for current page
+    // Append new rows instead of clearing
     pageData.forEach(rowData => {
         const tr = document.createElement('tr');
         rowData.forEach(cellData => {
@@ -188,17 +204,6 @@ function renderPage(page) {
     // Update scroll event listener
     const tableContainer = document.querySelector('.table-responsive');
     tableContainer.onscroll = handleScroll;
-}
-
-function handleScroll(e) {
-    const container = e.target;
-    if (container.scrollHeight - container.scrollTop - container.clientHeight < 50) {
-        // Near bottom, load more data
-        if (currentData && (currentPage * PAGE_SIZE) < currentData.data.length) {
-            currentPage++;
-            renderPage(currentPage);
-        }
-    }
 }
 
 function displayQueryResults(tableInfo) {

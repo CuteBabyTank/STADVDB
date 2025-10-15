@@ -74,7 +74,7 @@ app.get('/api/table/:tableName', (req, res) => {
             return res.status(400).json({ error: 'Invalid table name' });
     }
 
-    query += ' LIMIT 1000';
+    query += ' LIMIT 10000';
 
     db.query(query, (err, results) => {
         if (err) {
