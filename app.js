@@ -207,7 +207,12 @@ function renderPage(page) {
         const tr = document.createElement('tr');
         rowData.forEach(cellData => {
             const td = document.createElement('td');
-            td.textContent = cellData;
+            // Format numbers to 2 decimal places if it's a float
+            if (typeof cellData === 'number' && !Number.isInteger(cellData)) {
+                td.textContent = cellData.toFixed(2);
+            } else {
+                td.textContent = cellData;
+            }
             tr.appendChild(td);
         });
         body.appendChild(tr);

@@ -93,13 +93,8 @@ app.post('/api/reports/rollup', (req, res) => {
             d.year,
             d.quarter,
             d.month,
-<<<<<<< HEAD
-            SUM(t.amount) as total_amount,
-            COUNT(*) as transaction_count
-=======
             SUM(t.amount) AS total_amount,
             COUNT(*) AS transaction_count
->>>>>>> 15828e53057969d2785077de4a199bc51319bac7
         FROM fact_trans t
         JOIN dim_date d ON t.trans_date_key = d.date_key
         GROUP BY d.year, d.quarter, d.month WITH ROLLUP;
@@ -197,7 +192,7 @@ app.post('/api/reports/pivot', (req, res) => {
         SELECT 
             dist.region,
             SUM(CASE WHEN f.trans_type = 'CREDIT' THEN f.amount ELSE 0 END) AS inflow,
-            SUM(CASE WHEN f.trans_type = 'DEBIT' THEN f.amount ELSE 0 END) AS outflow,
+            SUM(CASE WHEN f.trans_type = 'DEBIT (WITHDRAWAL)' OR f.trans_type = 'VYBER' THEN f.amount ELSE 0 END) AS outflow,
             d.month
         FROM fact_trans f
         JOIN dim_account acc ON f.account_key = acc.account_key
