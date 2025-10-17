@@ -88,11 +88,10 @@ app.get('/api/table/:tableName', (req, res) => {
 // Routes for OLAP operations
 app.post('/api/reports/rollup', (req, res) => {
     const query = `
-        SELECT 
+        SELECT
             d.year,
             d.quarter,
             d.month,
-            DATE_FORMAT(d.full_date, "%Y-%m-%d") as formatted_date,
             SUM(t.amount) as total_amount,
             COUNT(*) as transaction_count
         FROM fact_trans t
@@ -119,6 +118,77 @@ app.post('/api/reports/drilldown', (req, res) => {
         JOIN dim_account a ON t.account_key = a.account_key
         JOIN dim_district dist ON a.district_key = dist.district_key
         GROUP BY dist.region, dist.district_name, a.account_id;
+    `;
+    db.query(query, (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(results);
+    });
+});
+
+app.post('/api/reports/slice', (req, res) => {
+    const query = `
+        SELECT 
+            t.k_symbol,
+            COUNT(*) as transaction_count,
+            SUM(t.amount) as total_amount,
+            AVG(t.amount) as average_amount
+        FROM fact_trans t
+        WHERE t.k_symbol IN ('SIPO', 'LEASING')
+        GROUP BY t.k_symbol;
+    `;
+    db.query(query, (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(results);
+    });
+});
+
+app.post('/api/reports/dice', (req, res) => {
+    const query = `
+        SELECT 
+            dist.region,
+            d.year,
+            t.k_symbol,
+            COUNT(*) as transaction_count,
+            SUM(t.amount) as total_amount
+        FROM fact_trans t
+        JOIN dim_account a ON t.account_key = a.account_key
+        JOIN dim_district dist ON a.district_key = dist.district_key
+        JOIN dim_date d ON t.trans_date_key = d.date_key
+        WHERE dist.region IN ('north Bohemia', 'south Bohemia')
+            AND d.year BETWEEN 1995 AND 1997
+            AND t.k_symbol IN ('POJISTNE', 'UVER')
+        GROUP BY dist.region, d.year, t.k_symbol;
+    `;
+    db.query(query, (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(results);
+    });
+});
+
+app.post('/api/reports/pivot', (req, res) => {
+    const query = `
+        SELECT 
+            dist.region,
+            d.month,
+            SUM(CASE WHEN t.trans_type = 'PRIJEM' THEN t.amount ELSE 0 END) as inflow,
+            SUM(CASE WHEN t.trans_type = 'VYDAJ' THEN t.amount ELSE 0 END) as outflow,
+            SUM(t.amount) as net_amount,
+            COUNT(*) as transaction_count
+        FROM fact_trans t
+        JOIN dim_account a ON t.account_key = a.account_key
+        JOIN dim_district dist ON a.district_key = dist.district_key
+        JOIN dim_date d ON t.trans_date_key = d.date_key
+        GROUP BY dist.region, d.month
+        ORDER BY dist.region, d.month;
     `;
     db.query(query, (err, results) => {
         if (err) {

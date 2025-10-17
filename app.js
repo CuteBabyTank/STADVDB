@@ -52,19 +52,26 @@ document.getElementById('clear-selection').addEventListener('click', () => {
 // Report selection and query execution
 document.querySelectorAll('.report-card').forEach(card => {
     card.addEventListener('click', () => {
+        console.log('Report card clicked:', card.getAttribute('data-report'));
         // Remove selected class from all cards
         document.querySelectorAll('.report-card').forEach(c => c.classList.remove('selected'));
         // Add selected class to clicked card
         card.classList.add('selected');
         selectedReport = card.getAttribute('data-report');
+        console.log('Selected report set to:', selectedReport);
         // Enable run button
         document.getElementById('run-query').disabled = false;
+        console.log('Run button enabled');
     });
 });
 
 document.getElementById('run-query').addEventListener('click', () => {
+    console.log('Run Query button clicked!');
+    console.log('Selected report:', selectedReport);
     if (selectedReport) {
         runReportQuery(selectedReport);
+    } else {
+        console.log('No report selected');
     }
 });
 
@@ -100,14 +107,19 @@ async function fetchTableData(tableName) {
 }
 
 async function runReportQuery(reportType) {
+    console.log('runReportQuery called with:', reportType);
     try {
-        const response = await fetch(`http://localhost:3000/api/reports/${reportType}`, {
+        const url = `http://localhost:3000/api/reports/${reportType}`;
+        console.log('Fetching:', url);
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             }
         });
+        console.log('Response status:', response.status);
         const data = await response.json();
+        console.log('Data received:', data);
 
         if (response.ok) {
             const tableInfo = {
