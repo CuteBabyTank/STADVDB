@@ -87,28 +87,32 @@ app.get('/api/table/:tableName', (req, res) => {
 
 // Routes for OLAP operations
 app.post('/api/reports/rollup', (req, res) => {
+    console.log('[📊] Roll-up report requested');
     const query = `
         SELECT 
             d.year,
             d.quarter,
             d.month,
-            DATE_FORMAT(d.full_date, "%Y-%m-%d") as formatted_date,
-            SUM(t.amount) as total_amount,
-            COUNT(*) as transaction_count
+            SUM(t.amount) AS total_amount,
+            COUNT(*) AS transaction_count
         FROM fact_trans t
         JOIN dim_date d ON t.trans_date_key = d.date_key
         GROUP BY d.year, d.quarter, d.month WITH ROLLUP;
     `;
+    console.log('[🚀] Executing Roll-up query...');
     db.query(query, (err, results) => {
         if (err) {
+            console.error('[❌] Roll-up query failed:', err.message);
             res.status(500).json({ error: err.message });
             return;
         }
+        console.log(`[✅] Roll-up query successful (${results.length} rows)`);
         res.json(results);
     });
 });
 
 app.post('/api/reports/drilldown', (req, res) => {
+    console.log('[📊] Drill-down report requested');
     const query = `
         SELECT 
             dist.region,
@@ -120,11 +124,90 @@ app.post('/api/reports/drilldown', (req, res) => {
         JOIN dim_district dist ON a.district_key = dist.district_key
         GROUP BY dist.region, dist.district_name, a.account_id;
     `;
+    console.log('[🚀] Executing Drill-down query...');
     db.query(query, (err, results) => {
         if (err) {
-            res.status(500).json({ error: err.message });
-            return;
+            console.error('[❌] Drill-down query failed:', err.message);
+            return res.status(500).json({ error: err.message });
         }
+        console.log(`[✅] Drill-down query successful (${results.length} rows)`);
+        res.json(results);
+    });
+});
+
+app.post('/api/reports/slice', (req, res) => {
+    const { k_symbol } = req.body; // e.g. 'HOUSEHOLD PAYMENT'
+    console.log('[📊] Slice report requested');
+    const query = `
+        SELECT 
+            d.full_date,
+            SUM(f.amount) AS total_amount_paid
+        FROM fact_trans f
+        JOIN dim_date d ON f.trans_date_key = d.date_key
+        WHERE f.k_symbol = ?
+        GROUP BY d.full_date
+        ORDER BY d.full_date;
+    `;
+    console.log('[🚀] Executing Slice query...');
+    db.query(query, [k_symbol], (err, results) => {
+        if (err) {
+            console.error('[❌] Slice query failed:', err.message);
+            return res.status(500).json({ error: err.message });
+        }
+        console.log(`[✅] Slice query successful (${results.length} rows)`);
+        res.json(results);
+    });
+});
+
+app.post('/api/reports/dice', (req, res) => {
+    const { region, year, trans_type } = req.body;
+    console.log('[📊] Dice report requested');
+    const query = `
+        SELECT 
+            dist.region,
+            d.quarter,
+            f.trans_type,
+            SUM(f.amount) AS total_amount
+        FROM fact_trans f
+        JOIN dim_account acc ON f.account_key = acc.account_key
+        JOIN dim_district dist ON acc.district_key = dist.district_key
+        JOIN dim_date d ON f.trans_date_key = d.date_key
+        WHERE dist.region = ? AND d.year = ? AND f.trans_type = ?
+        GROUP BY dist.region, d.quarter, f.trans_type;
+    `;
+    console.log('[🚀] Executing Dice query...');
+    db.query(query, [region, year, trans_type], (err, results) => {
+        if (err) {
+            console.error('[❌] Dice query failed:', err.message);
+            return res.status(500).json({ error: err.message });
+        }
+        console.log(`[✅] Dice query successful (${results.length} rows)`);
+        res.json(results);
+    });
+});
+
+app.post('/api/reports/pivot', (req, res) => {
+    console.log('[📊] Pivot report requested');
+    const query = `
+        SELECT 
+            dist.region,
+            SUM(CASE WHEN f.trans_type = 'CREDIT' THEN f.amount ELSE 0 END) AS inflow,
+            SUM(CASE WHEN f.trans_type = 'DEBIT' THEN f.amount ELSE 0 END) AS outflow,
+            d.month
+        FROM fact_trans f
+        JOIN dim_account acc ON f.account_key = acc.account_key
+        JOIN dim_district dist ON acc.district_key = dist.district_key
+        JOIN dim_date d ON f.trans_date_key = d.date_key
+        GROUP BY dist.region, d.month
+        ORDER BY dist.region, d.month;
+    `;
+    console.log('[🚀] Executing Pivot query...');
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('[❌] Pivot query failed:', err.message);
+            return res.status(500).json({ error: err.message });
+        }
+        console.log(`[✅] Pivot query successful (${results.length} rows)`);
         res.json(results);
     });
 });
