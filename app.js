@@ -63,6 +63,9 @@ document.querySelectorAll('.report-card').forEach(card => {
         selectedReport = card.getAttribute('data-report');
         console.log('Selected report set to:', selectedReport);
         
+        // Hide runtime log when switching reports
+        document.getElementById('runtime-log').classList.add('hidden');
+        
         // Show/hide filters based on report type
         const filtersDiv = document.getElementById('report-filters');
         const drilldownFilter = document.getElementById('drilldown-filter');
@@ -83,6 +86,8 @@ document.querySelectorAll('.report-card').forEach(card => {
             drilldownFilter.classList.remove('hidden');
             loadAvailableYears('drilldown-from-year');
             loadAvailableYears('drilldown-to-year');
+            loadAvailableRegions();
+            loadAvailableDistricts();
         } else if (selectedReport === 'rollup') {
             filtersDiv.classList.remove('hidden');
             rollupFilter.classList.remove('hidden');
@@ -159,6 +164,46 @@ async function loadAvailableTransactionTypes() {
     }
 }
 
+// Load available regions for filter
+async function loadAvailableRegions() {
+    try {
+        const response = await fetch('http://localhost:3000/api/available-regions');
+        const regions = await response.json();
+        
+        const regionSelect = document.getElementById('drilldown-region');
+        regionSelect.innerHTML = '<option value="">All Regions</option>';
+        
+        regions.forEach(region => {
+            const option = document.createElement('option');
+            option.value = region;
+            option.textContent = region;
+            regionSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading regions:', error);
+    }
+}
+
+// Load available districts for filter
+async function loadAvailableDistricts() {
+    try {
+        const response = await fetch('http://localhost:3000/api/available-districts');
+        const districts = await response.json();
+        
+        const districtSelect = document.getElementById('drilldown-district');
+        districtSelect.innerHTML = '<option value="">All Districts</option>';
+        
+        districts.forEach(district => {
+            const option = document.createElement('option');
+            option.value = district;
+            option.textContent = district;
+            districtSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading districts:', error);
+    }
+}
+
 document.getElementById('run-query').addEventListener('click', () => {
     console.log('Run Query button clicked!');
     console.log('Selected report:', selectedReport);
@@ -202,6 +247,13 @@ async function fetchTableData(tableName) {
 
 async function runReportQuery(reportType) {
     console.log('runReportQuery called with:', reportType);
+    
+    // Hide runtime log from previous query
+    document.getElementById('runtime-log').classList.add('hidden');
+    
+    // Start timing
+    const startTime = performance.now();
+    
     try {
         const url = `http://localhost:3000/api/reports/${reportType}`;
         console.log('Fetching:', url);
@@ -211,13 +263,19 @@ async function runReportQuery(reportType) {
         if (reportType === 'drilldown') {
             const drilldownFromYear = document.getElementById('drilldown-from-year').value;
             const drilldownToYear = document.getElementById('drilldown-to-year').value;
+            const drilldownRegion = document.getElementById('drilldown-region').value;
+            const drilldownDistrict = document.getElementById('drilldown-district').value;
             if (drilldownFromYear) requestBody.fromYear = drilldownFromYear;
             if (drilldownToYear) requestBody.toYear = drilldownToYear;
+            if (drilldownRegion) requestBody.region = drilldownRegion;
+            if (drilldownDistrict) requestBody.district = drilldownDistrict;
         } else if (reportType === 'rollup') {
             const fromYear = document.getElementById('from-year-filter').value;
             const toYear = document.getElementById('to-year-filter').value;
+            const quarter = document.getElementById('rollup-quarter').value;
             if (fromYear) requestBody.fromYear = fromYear;
             if (toYear) requestBody.toYear = toYear;
+            if (quarter) requestBody.quarter = quarter;
         } else if (reportType === 'slice') {
             const sliceFromYear = document.getElementById('slice-from-year').value;
             const sliceToYear = document.getElementById('slice-to-year').value;
@@ -245,17 +303,24 @@ async function runReportQuery(reportType) {
             body: JSON.stringify(requestBody)
         });
         console.log('Response status:', response.status);
-        const data = await response.json();
-        console.log('Data received:', data);
+        const responseData = await response.json();
+        console.log('Data received:', responseData);
 
         if (response.ok) {
+            // Extract data and server execution time from response
+            const data = responseData.data;
+            const serverExecutionTime = responseData.executionTime;
+            
             const tableInfo = {
                 columns: Object.keys(data[0] || {}),
                 data: data.map(row => Object.values(row))
             };
             displayQueryResults(tableInfo);
+            
+            // Display runtime log with server execution time
+            displayRuntimeLog(serverExecutionTime);
         } else {
-            throw new Error(data.error);
+            throw new Error(responseData.error);
         }
     } catch (error) {
         console.error('Error:', error);
@@ -268,6 +333,18 @@ async function runReportQuery(reportType) {
         `;
         document.getElementById('compile-logs-container').prepend(compileLog);
     }
+}
+
+// Display runtime log
+function displayRuntimeLog(executionTime) {
+    const runtimeLog = document.getElementById('runtime-log');
+    const runtimeText = document.getElementById('runtime-text');
+    
+    runtimeText.textContent = `Query executed in ${executionTime} seconds`;
+    runtimeLog.classList.remove('hidden');
+    runtimeLog.classList.add('success');
+    
+    console.log(`✅ Query execution time: ${executionTime} seconds`);
 }
 
 // Display functions
@@ -488,27 +565,31 @@ function generateRollupChart(ctx, tableInfo) {
 }
 
 function generateDrilldownChart(ctx, tableInfo) {
-    // Bar chart for regional breakdown
-    const regionData = {};
+    // Bar chart for district breakdown
+    const districtData = {};
     
     tableInfo.data.forEach(row => {
-        const region = row[0];
-        const amount = parseFloat(row[3]) || 0;
-        if (!regionData[region]) {
-            regionData[region] = 0;
+        const district = row[1]; // district_name is in column 1
+        const amount = parseFloat(row[4]) || 0; // total_amount is in column 4
+        if (!districtData[district]) {
+            districtData[district] = 0;
         }
-        regionData[region] += amount;
+        districtData[district] += amount;
     });
 
-    const labels = Object.keys(regionData).slice(0, 10);
-    const data = labels.map(label => regionData[label]);
+    // Sort districts by amount and get all of them (or limit if too many)
+    const sortedDistricts = Object.entries(districtData)
+        .sort((a, b) => b[1] - a[1]); // Sort by amount descending
+    
+    const labels = sortedDistricts.map(entry => entry[0]);
+    const data = sortedDistricts.map(entry => entry[1]);
 
     currentChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Total Amount by Region',
+                label: 'Total Amount by District',
                 data: data,
                 backgroundColor: '#3b82f6',
                 borderColor: '#2563eb',
@@ -521,7 +602,7 @@ function generateDrilldownChart(ctx, tableInfo) {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Transaction Amounts by Region',
+                    text: 'Transaction Amounts by District',
                     color: '#f8fafc',
                     font: { size: 16 }
                 },
@@ -531,7 +612,7 @@ function generateDrilldownChart(ctx, tableInfo) {
             },
             scales: {
                 x: { 
-                    ticks: { color: '#94a3b8' },
+                    ticks: { color: '#94a3b8', maxRotation: 45, minRotation: 45 },
                     grid: { color: '#334155' }
                 },
                 y: {

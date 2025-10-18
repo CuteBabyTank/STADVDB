@@ -120,10 +120,44 @@ app.get('/api/available-trans-types', (req, res) => {
     });
 });
 
+app.get('/api/available-regions', (req, res) => {
+    const query = `
+        SELECT DISTINCT region 
+        FROM dim_district 
+        WHERE region IS NOT NULL 
+        ORDER BY region;
+    `;
+    db.query(query, (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        const regions = results.map(row => row.region);
+        res.json(regions);
+    });
+});
+
+app.get('/api/available-districts', (req, res) => {
+    const query = `
+        SELECT DISTINCT district_name 
+        FROM dim_district 
+        WHERE district_name IS NOT NULL 
+        ORDER BY district_name;
+    `;
+    db.query(query, (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        const districts = results.map(row => row.district_name);
+        res.json(districts);
+    });
+});
+
 // Routes for OLAP operations
 app.post('/api/reports/rollup', (req, res) => {
     console.log('Roll-up report requested');
-    const { fromYear, toYear } = req.body;
+    const { fromYear, toYear, quarter } = req.body;
     
     let query = `
         SELECT
@@ -147,6 +181,10 @@ app.post('/api/reports/rollup', (req, res) => {
         conditions.push('d.year <= ?');
         params.push(toYear);
     }
+    if (quarter) {
+        conditions.push('d.quarter = ?');
+        params.push(quarter);
+    }
     
     if (conditions.length > 0) {
         query += ' WHERE ' + conditions.join(' AND ');
@@ -154,21 +192,53 @@ app.post('/api/reports/rollup', (req, res) => {
     
     query += ' GROUP BY d.year, d.quarter, d.month WITH ROLLUP;';
     
-    console.log('[🚀] Executing Roll-up query...', fromYear || toYear ? `from ${fromYear || 'start'} to ${toYear || 'end'}` : 'all years');
+    const filterDesc = [];
+    if (fromYear || toYear) filterDesc.push(`from ${fromYear || 'start'} to ${toYear || 'end'}`);
+    if (quarter) filterDesc.push(`quarter: Q${quarter}`);
+    console.log('[EXECUTING] Roll-up query...', filterDesc.length > 0 ? filterDesc.join(', ') : 'all data');
+    const startTime = Date.now();
     db.query(query, params, (err, results) => {
+        const executionTime = ((Date.now() - startTime) / 1000).toFixed(2);
         if (err) {
-            console.error('[❌] Roll-up query failed:', err.message);
+            console.error('[ERROR] Roll-up query failed:', err.message);
             res.status(500).json({ error: err.message });
             return;
         }
-        console.log(`[✅] Roll-up query successful (${results.length} rows)`);
-        res.json(results);
+        
+        // Filter rollup results to show only meaningful subtotals:
+        // - Monthly details (year, quarter, month all present)
+        // - Quarterly subtotals (year and quarter present, month is null)
+        // - Yearly subtotals (year present, quarter and month are null)
+        // - Grand total (all are null)
+        const filteredResults = results.filter(row => {
+            const hasYear = row.year !== null;
+            const hasQuarter = row.quarter !== null;
+            const hasMonth = row.month !== null;
+            
+            // Keep monthly details
+            if (hasYear && hasQuarter && hasMonth) return true;
+            
+            // Keep quarterly subtotals (year and quarter, no month)
+            if (hasYear && hasQuarter && !hasMonth) return true;
+            
+            // Keep yearly subtotals (year only)
+            if (hasYear && !hasQuarter && !hasMonth) return true;
+            
+            // Keep grand total (all null)
+            if (!hasYear && !hasQuarter && !hasMonth) return true;
+            
+            // Filter out other intermediate rollup rows
+            return false;
+        });
+        
+        console.log(`[SUCCESS] Roll-up query successful (${filteredResults.length} rows after filtering) - Executed in ${executionTime} seconds`);
+        res.json({ data: filteredResults, executionTime: executionTime });
     });
 });
 
 app.post('/api/reports/drilldown', (req, res) => {
-    console.log('[📊] Drill-down report requested');
-    const { fromYear, toYear } = req.body;
+    console.log('[REQUEST] Drill-down report requested');
+    const { fromYear, toYear, region, district } = req.body;
     
     let query = `
         SELECT
@@ -194,6 +264,14 @@ app.post('/api/reports/drilldown', (req, res) => {
         conditions.push('d.year <= ?');
         params.push(toYear);
     }
+    if (region) {
+        conditions.push('dist.region = ?');
+        params.push(region);
+    }
+    if (district) {
+        conditions.push('dist.district_name = ?');
+        params.push(district);
+    }
     
     if (conditions.length > 0) {
         query += ' WHERE ' + conditions.join(' AND ');
@@ -201,19 +279,26 @@ app.post('/api/reports/drilldown', (req, res) => {
     
     query += ' GROUP BY dist.region, dist.district_name, a.account_id, d.year ORDER BY dist.region, dist.district_name, a.account_id, d.year;';
     
-    console.log('[🚀] Executing Drill-down query...', fromYear || toYear ? `from ${fromYear || 'start'} to ${toYear || 'end'}` : 'for all years');
+    const filterDesc = [];
+    if (fromYear || toYear) filterDesc.push(`from ${fromYear || 'start'} to ${toYear || 'end'}`);
+    if (region) filterDesc.push(`region: ${region}`);
+    if (district) filterDesc.push(`district: ${district}`);
+    console.log('[EXECUTING] Drill-down query...', filterDesc.length > 0 ? filterDesc.join(', ') : 'all data');
+    
+    const startTime = Date.now();
     db.query(query, params, (err, results) => {
+        const executionTime = ((Date.now() - startTime) / 1000).toFixed(2);
         if (err) {
-            console.error('[❌] Drill-down query failed:', err.message);
+            console.error('[ERROR] Drill-down query failed:', err.message);
             return res.status(500).json({ error: err.message });
         }
-        console.log(`[✅] Drill-down query successful (${results.length} rows)`);
-        res.json(results);
+        console.log(`[SUCCESS] Drill-down query successful (${results.length} rows) - Executed in ${executionTime} seconds`);
+        res.json({ data: results, executionTime: executionTime });
     });
 });
 
 app.post('/api/reports/slice', (req, res) => {
-    console.log('[📊] Slice report requested');
+    console.log('[REQUEST] Slice report requested');
     const { fromYear, toYear } = req.body;
     
     let query = `
@@ -243,20 +328,22 @@ app.post('/api/reports/slice', (req, res) => {
     query += ' WHERE ' + conditions.join(' AND ');
     query += ' GROUP BY t.k_symbol ORDER BY transaction_count DESC LIMIT 10;';
     
-    console.log('[🚀] Executing Slice query...', fromYear || toYear ? `from ${fromYear || 'start'} to ${toYear || 'end'}` : 'all years');
+    console.log('[EXECUTING] Slice query...', fromYear || toYear ? `from ${fromYear || 'start'} to ${toYear || 'end'}` : 'all years');
+    const startTime = Date.now();
     db.query(query, params, (err, results) => {
+        const executionTime = ((Date.now() - startTime) / 1000).toFixed(2);
         if (err) {
-            console.error('[❌] Slice query failed:', err.message);
+            console.error('[ERROR] Slice query failed:', err.message);
             return res.status(500).json({ error: err.message });
         }
-        console.log(`[✅] Slice query successful (${results.length} rows)`);
+        console.log(`[SUCCESS] Slice query successful (${results.length} rows) - Executed in ${executionTime} seconds`);
         console.log('Available k_symbol values:', results.map(r => r.k_symbol));
-        res.json(results);
+        res.json({ data: results, executionTime: executionTime });
     });
 });
 
 app.post('/api/reports/dice', (req, res) => {
-    console.log('[📊] Dice report requested');
+    console.log('[REQUEST] Dice report requested');
     const { fromYear, toYear, transType } = req.body;
     
     let query = `
@@ -295,20 +382,22 @@ app.post('/api/reports/dice', (req, res) => {
     const filterDesc = [];
     if (fromYear || toYear) filterDesc.push(`from ${fromYear || 'start'} to ${toYear || 'end'}`);
     if (transType) filterDesc.push(`type: ${transType}`);
-    console.log('[🚀] Executing Dice query...', filterDesc.length > 0 ? filterDesc.join(', ') : 'all data');
+    console.log('[EXECUTING] Dice query...', filterDesc.length > 0 ? filterDesc.join(', ') : 'all data');
     
+    const startTime = Date.now();
     db.query(query, params, (err, results) => {
+        const executionTime = ((Date.now() - startTime) / 1000).toFixed(2);
         if (err) {
-            console.error('[❌] Dice query failed:', err.message);
+            console.error('[ERROR] Dice query failed:', err.message);
             return res.status(500).json({ error: err.message });
         }
-        console.log(`[✅] Dice query successful (${results.length} rows)`);
-        res.json(results);
+        console.log(`[SUCCESS] Dice query successful (${results.length} rows) - Executed in ${executionTime} seconds`);
+        res.json({ data: results, executionTime: executionTime });
     });
 });
 
 app.post('/api/reports/pivot', (req, res) => {
-    console.log('[📊] Pivot report requested');
+    console.log('[REQUEST] Pivot report requested');
     const { fromYear, toYear } = req.body;
     
     let query = `
@@ -342,14 +431,16 @@ app.post('/api/reports/pivot', (req, res) => {
     
     query += ' GROUP BY dist.region, d.year, d.month ORDER BY dist.region, d.year, d.month;';
     
-    console.log('[🚀] Executing Pivot query...', fromYear || toYear ? `from ${fromYear || 'start'} to ${toYear || 'end'}` : 'all years');
+    console.log('[EXECUTING] Pivot query...', fromYear || toYear ? `from ${fromYear || 'start'} to ${toYear || 'end'}` : 'all years');
+    const startTime = Date.now();
     db.query(query, params, (err, results) => {
+        const executionTime = ((Date.now() - startTime) / 1000).toFixed(2);
         if (err) {
-            console.error('[❌] Pivot query failed:', err.message);
+            console.error('[ERROR] Pivot query failed:', err.message);
             return res.status(500).json({ error: err.message });
         }
-        console.log(`[✅] Pivot query successful (${results.length} rows)`);
-        res.json(results);
+        console.log(`[SUCCESS] Pivot query successful (${results.length} rows) - Executed in ${executionTime} seconds`);
+        res.json({ data: results, executionTime: executionTime });
     });
 });
 

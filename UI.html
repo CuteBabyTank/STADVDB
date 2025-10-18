@@ -207,7 +207,7 @@
                         <div class="report-title">Yearly to Monthly Transaction Summary</div>
                     </div>
                     <div class="report-description">
-                        Roll-up Query
+                        Aggregates transaction data from monthly to quarterly to yearly levels with hierarchical grouping (WITH ROLLUP). Filter by year range, region, and transaction type.
                     </div>
                 </div>
                 <div class="report-card" data-report="drilldown">
@@ -216,7 +216,7 @@
                         <div class="report-title">Regional and Account-Level Transaction Breakdown</div>
                     </div>
                     <div class="report-description">
-                        Drill-down Query
+                        Navigates from higher-level regional summaries down to detailed district-level transaction data. Filter by year range, specific region, or district for detailed analysis.
                     </div>
                 </div>
                 <div class="report-card" data-report="slice">
@@ -225,7 +225,7 @@
                         <div class="report-title">Transaction Analysis by Type</div>
                     </div>
                     <div class="report-description">
-                        Slice Query
+                        Extracts a specific subset of data by isolating top transaction types. Filter by year range to analyze transaction type distributions across different time periods.
                     </div>
                 </div>
                 <div class="report-card" data-report="dice">
@@ -234,7 +234,7 @@
                         <div class="report-title">Regional and Yearly Transaction Patterns</div>
                     </div>
                     <div class="report-description">
-                        Dice Query
+                        Performs multi-dimensional filtering across region, year, and transaction type dimensions. Select specific combinations to analyze targeted data cubes.
                     </div>
                 </div>
                 <div class="report-card" data-report="pivot">
@@ -243,7 +243,7 @@
                         <div class="report-title">Monthly Inflow vs Outflow by Region</div>
                     </div>
                     <div class="report-description">
-                        Pivot Query
+                        Rotates data perspective to compare credit (inflow) vs debit/withdrawal (outflow) transactions across regions and months. Filter by year range for focused comparison.
                     </div>
                 </div>
             </div>
@@ -263,6 +263,18 @@
                             <option value="">Select Year</option>
                         </select>
                     </div>
+                    <div class="filter-group">
+                        <label for="drilldown-region">Region:</label>
+                        <select id="drilldown-region" class="filter-select">
+                            <option value="">All Regions</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="drilldown-district">District:</label>
+                        <select id="drilldown-district" class="filter-select">
+                            <option value="">All Districts</option>
+                        </select>
+                    </div>
                 </div>
                 <!-- Rollup Filter -->
                 <div id="rollup-filter" class="filter-group-row hidden">
@@ -276,6 +288,16 @@
                         <label for="to-year-filter">To Year:</label>
                         <select id="to-year-filter" class="filter-select">
                             <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="rollup-quarter">Quarter:</label>
+                        <select id="rollup-quarter" class="filter-select">
+                            <option value="">All Quarters</option>
+                            <option value="1">Q1</option>
+                            <option value="2">Q2</option>
+                            <option value="3">Q3</option>
+                            <option value="4">Q4</option>
                         </select>
                     </div>
                 </div>
@@ -334,6 +356,11 @@
             <button class="run-btn" id="run-query" disabled>
                 Run Query
             </button>
+            <!-- Runtime Log Display -->
+            <div id="runtime-log" class="runtime-log hidden">
+                <i class="fas fa-clock"></i>
+                <span id="runtime-text">Query executed in 0.00 seconds</span>
+            </div>
             <!-- Add table data container for reports -->
             <div id="report-data" class="table-data hidden">
                 <div class="table-data-header">
