@@ -7,6 +7,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="styles.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 </head>
 <body>
     <div class="container">
@@ -315,6 +316,15 @@
                             <option value="">Select Year</option>
                         </select>
                     </div>
+                    <div class="filter-group">
+                        <label for="slice-metric">Display Metric:</label>
+                        <select id="slice-metric" class="filter-select">
+                            <option value="all">All Metrics (Comparison)</option>
+                            <option value="transaction_count">Transaction Count</option>
+                            <option value="total_amount">Total Amount</option>
+                            <option value="average_amount">Average Amount</option>
+                        </select>
+                    </div>
                 </div>
                 <!-- Dice Filter -->
                 <div id="dice-filter" class="filter-group-row hidden">
@@ -371,6 +381,25 @@
                 <!-- Chart Container -->
                 <div class="chart-container">
                     <canvas id="report-chart"></canvas>
+                </div>
+                <!-- Multiple Charts Container (for comparison view) -->
+                <div id="comparison-charts-container" class="comparison-charts-container hidden">
+                    <div class="comparison-charts-row">
+                        <div class="comparison-chart-wrapper">
+                            <canvas id="comparison-chart-1"></canvas>
+                        </div>
+                        <div class="comparison-chart-wrapper">
+                            <canvas id="comparison-chart-2"></canvas>
+                        </div>
+                        <div class="comparison-chart-wrapper">
+                            <canvas id="comparison-chart-3"></canvas>
+                        </div>
+                    </div>
+                    <div class="comparison-legend-container">
+                        <div id="comparison-legend" class="comparison-legend">
+                            <!-- Legend will be populated by JavaScript -->
+                        </div>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="data-table" id="report-table-content">

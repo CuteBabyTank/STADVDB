@@ -279,8 +279,10 @@ async function runReportQuery(reportType) {
         } else if (reportType === 'slice') {
             const sliceFromYear = document.getElementById('slice-from-year').value;
             const sliceToYear = document.getElementById('slice-to-year').value;
+            const sliceMetric = document.getElementById('slice-metric').value;
             if (sliceFromYear) requestBody.fromYear = sliceFromYear;
             if (sliceToYear) requestBody.toYear = sliceToYear;
+            if (sliceMetric) requestBody.metric = sliceMetric;
         } else if (reportType === 'dice') {
             const diceFromYear = document.getElementById('dice-from-year').value;
             const diceToYear = document.getElementById('dice-to-year').value;
@@ -468,6 +470,16 @@ function generateChart(tableInfo) {
     if (currentChart) {
         currentChart.destroy();
     }
+    
+    // Destroy comparison charts if they exist
+    if (window.comparisonCharts) {
+        window.comparisonCharts.forEach(chart => chart.destroy());
+        window.comparisonCharts = [];
+    }
+    
+    // Reset visibility - show single chart container, hide comparison
+    document.querySelector('.chart-container').classList.remove('hidden');
+    document.getElementById('comparison-charts-container').classList.add('hidden');
 
     const ctx = document.getElementById('report-chart').getContext('2d');
     
@@ -626,8 +638,37 @@ function generateDrilldownChart(ctx, tableInfo) {
 
 function generateSliceChart(ctx, tableInfo) {
     // Pie chart for transaction types
+    // Get selected metric from the dropdown
+    const selectedMetric = document.getElementById('slice-metric').value || 'transaction_count';
+    
+    // Check if user wants to see all metrics in comparison view
+    if (selectedMetric === 'all') {
+        generateSliceComparisonCharts(tableInfo);
+        return;
+    }
+    
     const labels = tableInfo.data.map(row => row[0]);
-    const data = tableInfo.data.map(row => parseInt(row[1]) || 0);
+    let data;
+    let chartTitle;
+    
+    // Map metric to column index and title
+    switch(selectedMetric) {
+        case 'transaction_count':
+            data = tableInfo.data.map(row => parseInt(row[1]) || 0);
+            chartTitle = 'Transaction Distribution by Type (Count)';
+            break;
+        case 'total_amount':
+            data = tableInfo.data.map(row => parseFloat(row[2]) || 0);
+            chartTitle = 'Transaction Distribution by Type (Total Amount)';
+            break;
+        case 'average_amount':
+            data = tableInfo.data.map(row => parseFloat(row[3]) || 0);
+            chartTitle = 'Transaction Distribution by Type (Average Amount)';
+            break;
+        default:
+            data = tableInfo.data.map(row => parseInt(row[1]) || 0);
+            chartTitle = 'Transaction Distribution by Type';
+    }
     
     const colors = [
         '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
@@ -651,16 +692,158 @@ function generateSliceChart(ctx, tableInfo) {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Transaction Distribution by Type',
+                    text: chartTitle,
                     color: '#f8fafc',
                     font: { size: 16 }
                 },
                 legend: {
                     labels: { color: '#f8fafc' },
                     position: 'right'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(2);
+                            return `${label}: ${value.toLocaleString()} (${percentage}%)`;
+                        }
+                    }
+                },
+                datalabels: {
+                    color: '#ffffff',
+                    font: {
+                        weight: 'bold',
+                        size: 14
+                    },
+                    formatter: (value, context) => {
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return percentage > 3 ? `${percentage}%` : '';  // Only show if > 3%
+                    },
+                    anchor: 'center',
+                    align: 'center'
                 }
             }
+        },
+        plugins: [ChartDataLabels]  // Register the plugin
+    });
+}
+
+function generateSliceComparisonCharts(tableInfo) {
+    // Hide single chart container, show comparison container
+    document.querySelector('.chart-container').classList.add('hidden');
+    document.getElementById('comparison-charts-container').classList.remove('hidden');
+    
+    const labels = tableInfo.data.map(row => row[0]);
+    const colors = [
+        '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+        '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16'
+    ];
+    
+    const metrics = [
+        {
+            canvasId: 'comparison-chart-1',
+            data: tableInfo.data.map(row => parseInt(row[1]) || 0),
+            title: 'Transaction Count'
+        },
+        {
+            canvasId: 'comparison-chart-2',
+            data: tableInfo.data.map(row => parseFloat(row[2]) || 0),
+            title: 'Total Amount'
+        },
+        {
+            canvasId: 'comparison-chart-3',
+            data: tableInfo.data.map(row => parseFloat(row[3]) || 0),
+            title: 'Average Amount'
         }
+    ];
+    
+    // Destroy existing comparison charts if they exist
+    if (window.comparisonCharts) {
+        window.comparisonCharts.forEach(chart => chart.destroy());
+    }
+    window.comparisonCharts = [];
+    
+    // Create three pie charts without individual legends
+    metrics.forEach(metric => {
+        const ctx = document.getElementById(metric.canvasId).getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: metric.data,
+                    backgroundColor: colors,
+                    borderColor: '#1e293b',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: metric.title,
+                        color: '#f8fafc',
+                        font: { size: 18, weight: 'bold' },
+                        padding: { bottom: 20 }
+                    },
+                    legend: {
+                        display: false  // Hide individual legends
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(2);
+                                return `${label}: ${value.toLocaleString()} (${percentage}%)`;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        color: '#ffffff',
+                        font: {
+                            weight: 'bold',
+                            size: 14
+                        },
+                        formatter: (value, context) => {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return percentage > 3 ? `${percentage}%` : '';  // Only show if > 3%
+                        },
+                        anchor: 'center',
+                        align: 'center'
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]  // Register the plugin
+        });
+        window.comparisonCharts.push(chart);
+    });
+    
+    // Create a single legend at the bottom
+    const legendContainer = document.getElementById('comparison-legend');
+    legendContainer.innerHTML = '';
+    
+    labels.forEach((label, index) => {
+        const legendItem = document.createElement('div');
+        legendItem.className = 'comparison-legend-item';
+        
+        const colorBox = document.createElement('div');
+        colorBox.className = 'comparison-legend-color';
+        colorBox.style.backgroundColor = colors[index];
+        
+        const labelText = document.createElement('span');
+        labelText.textContent = label;
+        
+        legendItem.appendChild(colorBox);
+        legendItem.appendChild(labelText);
+        legendContainer.appendChild(legendItem);
     });
 }
 
