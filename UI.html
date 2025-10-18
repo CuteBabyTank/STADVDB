@@ -6,6 +6,7 @@
     <title>Bank Data Warehouse Operations</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="styles.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
@@ -246,6 +247,90 @@
                     </div>
                 </div>
             </div>
+            <!-- Filter Controls -->
+            <div id="report-filters" class="report-filters hidden">
+                <!-- Drilldown Filter -->
+                <div id="drilldown-filter" class="filter-group-row hidden">
+                    <div class="filter-group">
+                        <label for="drilldown-from-year">From Year:</label>
+                        <select id="drilldown-from-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="drilldown-to-year">To Year:</label>
+                        <select id="drilldown-to-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Rollup Filter -->
+                <div id="rollup-filter" class="filter-group-row hidden">
+                    <div class="filter-group">
+                        <label for="from-year-filter">From Year:</label>
+                        <select id="from-year-filter" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="to-year-filter">To Year:</label>
+                        <select id="to-year-filter" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Slice Filter -->
+                <div id="slice-filter" class="filter-group-row hidden">
+                    <div class="filter-group">
+                        <label for="slice-from-year">From Year:</label>
+                        <select id="slice-from-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="slice-to-year">To Year:</label>
+                        <select id="slice-to-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Dice Filter -->
+                <div id="dice-filter" class="filter-group-row hidden">
+                    <div class="filter-group">
+                        <label for="dice-from-year">From Year:</label>
+                        <select id="dice-from-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="dice-to-year">To Year:</label>
+                        <select id="dice-to-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="dice-trans-type">Transaction Type:</label>
+                        <select id="dice-trans-type" class="filter-select">
+                            <option value="">All Types</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Pivot Filter -->
+                <div id="pivot-filter" class="filter-group-row hidden">
+                    <div class="filter-group">
+                        <label for="pivot-from-year">From Year:</label>
+                        <select id="pivot-from-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="pivot-to-year">To Year:</label>
+                        <select id="pivot-to-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
             <button class="run-btn" id="run-query" disabled>
                 Run Query
             </button>
@@ -255,6 +340,10 @@
                     <div class="table-data-title">
                         <span id="selected-report-name">Report Results</span>
                     </div>
+                </div>
+                <!-- Chart Container -->
+                <div class="chart-container">
+                    <canvas id="report-chart"></canvas>
                 </div>
                 <div class="table-responsive">
                     <table class="data-table" id="report-table-content">

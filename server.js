@@ -85,10 +85,47 @@ app.get('/api/table/:tableName', (req, res) => {
     });
 });
 
+// Route to get available years for filtering
+app.get('/api/available-years', (req, res) => {
+    const query = `
+        SELECT DISTINCT year 
+        FROM dim_date 
+        WHERE year IS NOT NULL 
+        ORDER BY year;
+    `;
+    db.query(query, (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        const years = results.map(row => row.year);
+        res.json(years);
+    });
+});
+
+app.get('/api/available-trans-types', (req, res) => {
+    const query = `
+        SELECT DISTINCT trans_type 
+        FROM fact_trans 
+        WHERE trans_type IS NOT NULL 
+        ORDER BY trans_type;
+    `;
+    db.query(query, (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        const transTypes = results.map(row => row.trans_type);
+        res.json(transTypes);
+    });
+});
+
 // Routes for OLAP operations
 app.post('/api/reports/rollup', (req, res) => {
-    console.log('[📊] Roll-up report requested');
-    const query = `
+    console.log('Roll-up report requested');
+    const { fromYear, toYear } = req.body;
+    
+    let query = `
         SELECT
             d.year,
             d.quarter,
@@ -97,10 +134,28 @@ app.post('/api/reports/rollup', (req, res) => {
             COUNT(*) AS transaction_count
         FROM fact_trans t
         JOIN dim_date d ON t.trans_date_key = d.date_key
-        GROUP BY d.year, d.quarter, d.month WITH ROLLUP;
     `;
-    console.log('[🚀] Executing Roll-up query...');
-    db.query(query, (err, results) => {
+    
+    const params = [];
+    const conditions = [];
+    
+    if (fromYear) {
+        conditions.push('d.year >= ?');
+        params.push(fromYear);
+    }
+    if (toYear) {
+        conditions.push('d.year <= ?');
+        params.push(toYear);
+    }
+    
+    if (conditions.length > 0) {
+        query += ' WHERE ' + conditions.join(' AND ');
+    }
+    
+    query += ' GROUP BY d.year, d.quarter, d.month WITH ROLLUP;';
+    
+    console.log('[🚀] Executing Roll-up query...', fromYear || toYear ? `from ${fromYear || 'start'} to ${toYear || 'end'}` : 'all years');
+    db.query(query, params, (err, results) => {
         if (err) {
             console.error('[❌] Roll-up query failed:', err.message);
             res.status(500).json({ error: err.message });
@@ -113,19 +168,41 @@ app.post('/api/reports/rollup', (req, res) => {
 
 app.post('/api/reports/drilldown', (req, res) => {
     console.log('[📊] Drill-down report requested');
-    const query = `
-        SELECT 
+    const { fromYear, toYear } = req.body;
+    
+    let query = `
+        SELECT
             dist.region,
             dist.district_name,
             a.account_id,
+            d.year,
             SUM(t.amount) as total_amount
         FROM fact_trans t
         JOIN dim_account a ON t.account_key = a.account_key
         JOIN dim_district dist ON a.district_key = dist.district_key
-        GROUP BY dist.region, dist.district_name, a.account_id;
+        JOIN dim_date d ON t.trans_date_key = d.date_key
     `;
-    console.log('[🚀] Executing Drill-down query...');
-    db.query(query, (err, results) => {
+    
+    const params = [];
+    const conditions = [];
+    
+    if (fromYear) {
+        conditions.push('d.year >= ?');
+        params.push(fromYear);
+    }
+    if (toYear) {
+        conditions.push('d.year <= ?');
+        params.push(toYear);
+    }
+    
+    if (conditions.length > 0) {
+        query += ' WHERE ' + conditions.join(' AND ');
+    }
+    
+    query += ' GROUP BY dist.region, dist.district_name, a.account_id, d.year ORDER BY dist.region, dist.district_name, a.account_id, d.year;';
+    
+    console.log('[🚀] Executing Drill-down query...', fromYear || toYear ? `from ${fromYear || 'start'} to ${toYear || 'end'}` : 'for all years');
+    db.query(query, params, (err, results) => {
         if (err) {
             console.error('[❌] Drill-down query failed:', err.message);
             return res.status(500).json({ error: err.message });
@@ -136,47 +213,91 @@ app.post('/api/reports/drilldown', (req, res) => {
 });
 
 app.post('/api/reports/slice', (req, res) => {
-    const { k_symbol } = req.body; // e.g. 'HOUSEHOLD PAYMENT'
     console.log('[📊] Slice report requested');
-    const query = `
-        SELECT 
-            d.full_date,
-            SUM(f.amount) AS total_amount_paid
-        FROM fact_trans f
-        JOIN dim_date d ON f.trans_date_key = d.date_key
-        WHERE f.k_symbol = ?
-        GROUP BY d.full_date
-        ORDER BY d.full_date;
+    const { fromYear, toYear } = req.body;
+    
+    let query = `
+        SELECT
+            t.k_symbol,
+            COUNT(*) as transaction_count,
+            SUM(t.amount) as total_amount,
+            AVG(t.amount) as average_amount
+        FROM fact_trans t
     `;
-    console.log('[🚀] Executing Slice query...');
-    db.query(query, [k_symbol], (err, results) => {
+    
+    const params = [];
+    const conditions = ['t.k_symbol IS NOT NULL', "t.k_symbol != ''"];
+    
+    if (fromYear || toYear) {
+        query += ' JOIN dim_date d ON t.trans_date_key = d.date_key';
+        if (fromYear) {
+            conditions.push('d.year >= ?');
+            params.push(fromYear);
+        }
+        if (toYear) {
+            conditions.push('d.year <= ?');
+            params.push(toYear);
+        }
+    }
+    
+    query += ' WHERE ' + conditions.join(' AND ');
+    query += ' GROUP BY t.k_symbol ORDER BY transaction_count DESC LIMIT 10;';
+    
+    console.log('[🚀] Executing Slice query...', fromYear || toYear ? `from ${fromYear || 'start'} to ${toYear || 'end'}` : 'all years');
+    db.query(query, params, (err, results) => {
         if (err) {
             console.error('[❌] Slice query failed:', err.message);
             return res.status(500).json({ error: err.message });
         }
         console.log(`[✅] Slice query successful (${results.length} rows)`);
+        console.log('Available k_symbol values:', results.map(r => r.k_symbol));
         res.json(results);
     });
 });
 
 app.post('/api/reports/dice', (req, res) => {
-    const { region, year, trans_type } = req.body;
     console.log('[📊] Dice report requested');
-    const query = `
-        SELECT 
+    const { fromYear, toYear, transType } = req.body;
+    
+    let query = `
+        SELECT
             dist.region,
-            d.quarter,
-            f.trans_type,
-            SUM(f.amount) AS total_amount
-        FROM fact_trans f
-        JOIN dim_account acc ON f.account_key = acc.account_key
-        JOIN dim_district dist ON acc.district_key = dist.district_key
-        JOIN dim_date d ON f.trans_date_key = d.date_key
-        WHERE dist.region = ? AND d.year = ? AND f.trans_type = ?
-        GROUP BY dist.region, d.quarter, f.trans_type;
+            d.year,
+            t.trans_type,
+            COUNT(*) as transaction_count,
+            SUM(t.amount) as total_amount,
+            AVG(t.amount) as average_amount
+        FROM fact_trans t
+        JOIN dim_account a ON t.account_key = a.account_key
+        JOIN dim_district dist ON a.district_key = dist.district_key
+        JOIN dim_date d ON t.trans_date_key = d.date_key
     `;
-    console.log('[🚀] Executing Dice query...');
-    db.query(query, [region, year, trans_type], (err, results) => {
+    
+    const params = [];
+    const conditions = ['t.trans_type IS NOT NULL'];
+    
+    if (fromYear) {
+        conditions.push('d.year >= ?');
+        params.push(fromYear);
+    }
+    if (toYear) {
+        conditions.push('d.year <= ?');
+        params.push(toYear);
+    }
+    if (transType) {
+        conditions.push('t.trans_type = ?');
+        params.push(transType);
+    }
+    
+    query += ' WHERE ' + conditions.join(' AND ');
+    query += ' GROUP BY dist.region, d.year, t.trans_type ORDER BY dist.region, d.year, t.trans_type;';
+    
+    const filterDesc = [];
+    if (fromYear || toYear) filterDesc.push(`from ${fromYear || 'start'} to ${toYear || 'end'}`);
+    if (transType) filterDesc.push(`type: ${transType}`);
+    console.log('[🚀] Executing Dice query...', filterDesc.length > 0 ? filterDesc.join(', ') : 'all data');
+    
+    db.query(query, params, (err, results) => {
         if (err) {
             console.error('[❌] Dice query failed:', err.message);
             return res.status(500).json({ error: err.message });
@@ -188,97 +309,46 @@ app.post('/api/reports/dice', (req, res) => {
 
 app.post('/api/reports/pivot', (req, res) => {
     console.log('[📊] Pivot report requested');
-    const query = `
-        SELECT 
+    const { fromYear, toYear } = req.body;
+    
+    let query = `
+        SELECT
             dist.region,
+            d.year,
+            d.month,
             SUM(CASE WHEN f.trans_type = 'CREDIT' THEN f.amount ELSE 0 END) AS inflow,
-            SUM(CASE WHEN f.trans_type = 'DEBIT (WITHDRAWAL)' OR f.trans_type = 'VYBER' THEN f.amount ELSE 0 END) AS outflow,
-            d.month
+            SUM(CASE WHEN f.trans_type = 'DEBIT (WITHDRAWAL)' OR f.trans_type = 'VYBER' THEN f.amount ELSE 0 END) AS outflow
         FROM fact_trans f
         JOIN dim_account acc ON f.account_key = acc.account_key
         JOIN dim_district dist ON acc.district_key = dist.district_key
         JOIN dim_date d ON f.trans_date_key = d.date_key
-        GROUP BY dist.region, d.month
-        ORDER BY dist.region, d.month;
     `;
-    console.log('[🚀] Executing Pivot query...');
-    db.query(query, (err, results) => {
+    
+    const params = [];
+    const conditions = [];
+    
+    if (fromYear) {
+        conditions.push('d.year >= ?');
+        params.push(fromYear);
+    }
+    if (toYear) {
+        conditions.push('d.year <= ?');
+        params.push(toYear);
+    }
+    
+    if (conditions.length > 0) {
+        query += ' WHERE ' + conditions.join(' AND ');
+    }
+    
+    query += ' GROUP BY dist.region, d.year, d.month ORDER BY dist.region, d.year, d.month;';
+    
+    console.log('[🚀] Executing Pivot query...', fromYear || toYear ? `from ${fromYear || 'start'} to ${toYear || 'end'}` : 'all years');
+    db.query(query, params, (err, results) => {
         if (err) {
             console.error('[❌] Pivot query failed:', err.message);
             return res.status(500).json({ error: err.message });
         }
         console.log(`[✅] Pivot query successful (${results.length} rows)`);
-        res.json(results);
-    });
-});
-
-app.post('/api/reports/slice', (req, res) => {
-    const query = `
-        SELECT 
-            t.k_symbol,
-            COUNT(*) as transaction_count,
-            SUM(t.amount) as total_amount,
-            AVG(t.amount) as average_amount
-        FROM fact_trans t
-        WHERE t.k_symbol IN ('SIPO', 'LEASING')
-        GROUP BY t.k_symbol;
-    `;
-    db.query(query, (err, results) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json(results);
-    });
-});
-
-app.post('/api/reports/dice', (req, res) => {
-    const query = `
-        SELECT 
-            dist.region,
-            d.year,
-            t.k_symbol,
-            COUNT(*) as transaction_count,
-            SUM(t.amount) as total_amount
-        FROM fact_trans t
-        JOIN dim_account a ON t.account_key = a.account_key
-        JOIN dim_district dist ON a.district_key = dist.district_key
-        JOIN dim_date d ON t.trans_date_key = d.date_key
-        WHERE dist.region IN ('north Bohemia', 'south Bohemia')
-            AND d.year BETWEEN 1995 AND 1997
-            AND t.k_symbol IN ('POJISTNE', 'UVER')
-        GROUP BY dist.region, d.year, t.k_symbol;
-    `;
-    db.query(query, (err, results) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json(results);
-    });
-});
-
-app.post('/api/reports/pivot', (req, res) => {
-    const query = `
-        SELECT 
-            dist.region,
-            d.month,
-            SUM(CASE WHEN t.trans_type = 'PRIJEM' THEN t.amount ELSE 0 END) as inflow,
-            SUM(CASE WHEN t.trans_type = 'VYDAJ' THEN t.amount ELSE 0 END) as outflow,
-            SUM(t.amount) as net_amount,
-            COUNT(*) as transaction_count
-        FROM fact_trans t
-        JOIN dim_account a ON t.account_key = a.account_key
-        JOIN dim_district dist ON a.district_key = dist.district_key
-        JOIN dim_date d ON t.trans_date_key = d.date_key
-        GROUP BY dist.region, d.month
-        ORDER BY dist.region, d.month;
-    `;
-    db.query(query, (err, results) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
         res.json(results);
     });
 });
