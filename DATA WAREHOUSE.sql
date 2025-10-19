@@ -2,7 +2,6 @@ DROP DATABASE IF EXISTS bank_dwh;
 CREATE DATABASE IF NOT EXISTS `bank_dwh`;
 USE `bank_dwh`;
 
--- DATE DIMENSION
 DROP TABLE IF EXISTS `dim_date`;
 CREATE TABLE `dim_date` (
     date_key INT AUTO_INCREMENT PRIMARY KEY,
@@ -14,8 +13,6 @@ CREATE TABLE `dim_date` (
     day_of_week VARCHAR(15)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-
--- DISTRICT DIMENSION
 DROP TABLE IF EXISTS `dim_district`;
 CREATE TABLE `dim_district` (
     district_key INT AUTO_INCREMENT PRIMARY KEY,
@@ -31,8 +28,6 @@ CREATE TABLE `dim_district` (
     nocrimes INT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-
--- CLIENT DIMENSION
 DROP TABLE IF EXISTS `dim_client`;
 CREATE TABLE `dim_client` (
     client_key INT AUTO_INCREMENT PRIMARY KEY,
@@ -41,8 +36,6 @@ CREATE TABLE `dim_client` (
     FOREIGN KEY (district_key) REFERENCES dim_district(district_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-
--- ACCOUNT DIMENSION
 DROP TABLE IF EXISTS `dim_account`;
 CREATE TABLE `dim_account` (
     account_key INT AUTO_INCREMENT PRIMARY KEY,
@@ -56,8 +49,6 @@ CREATE TABLE `dim_account` (
 ALTER TABLE dim_account
 ADD UNIQUE (account_id);
 
-
--- LOAN DIMENSION
 DROP TABLE IF EXISTS `dim_loan`;
 CREATE TABLE `dim_loan` (
     loan_key INT AUTO_INCREMENT PRIMARY KEY,
@@ -70,8 +61,6 @@ CREATE TABLE `dim_loan` (
     start_date DATE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-
--- CARD DIMENSION
 DROP TABLE IF EXISTS `dim_card`;
 CREATE TABLE `dim_card` (
     card_key INT AUTO_INCREMENT PRIMARY KEY,
@@ -80,7 +69,6 @@ CREATE TABLE `dim_card` (
     issued_date DATE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- FACT TABLE
 DROP TABLE IF EXISTS `fact_orders`;
 CREATE TABLE `fact_orders` (
 	order_key INT AUTO_INCREMENT PRIMARY KEY,

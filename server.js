@@ -4,8 +4,6 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-
-// Enable CORS and JSON parsing
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
@@ -16,13 +14,11 @@ const db = mysql.createConnection({
     user: 'root', // Replace with your MySQL username
     password: 'Newpassword123?', // Replace with your MySQL password
     database: 'bank_dwh', // Replace with your database name
-    // Update settings to handle larger datasets
     supportBigNumbers: true,
     bigNumberStrings: true,
     typeCast: true,
     multipleStatements: true,
-    // Add setting for larger results
-    maxAllowedPacket: 16777216 // 16MB packet size
+    maxAllowedPacket: 16777216
 });
 
 // Test database connection
@@ -44,7 +40,6 @@ app.get('/api/table/:tableName', (req, res) => {
     const { tableName } = req.params;
     let query;
 
-    // Define specific queries for each table
     switch(tableName) {
         case 'dim_date':
             query = 'SELECT date_key, DATE_FORMAT(full_date, "%Y-%m-%d") as full_date, year, quarter, month, day, day_of_week FROM dim_date';

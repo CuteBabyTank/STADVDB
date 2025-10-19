@@ -1,45 +1,29 @@
-// Tab switching
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
-        // Remove active class from all tabs
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        // Add active class to clicked tab
         tab.classList.add('active');
-        // Hide all tab contents
         document.querySelectorAll('.tab-content').forEach(content => {
             content.classList.add('hidden');
         });
-        // Show corresponding tab content
         const tabName = tab.getAttribute('data-tab');
         document.getElementById(`${tabName}-view`).classList.remove('hidden');
-
-        // Hide both data containers when switching tabs
         document.getElementById('table-data').classList.add('hidden');
         document.getElementById('report-data').classList.add('hidden');
     });
 });
 
-// Global variables
 let selectedTable = null;
 let selectedReport = null;
-
-// Global variables for pagination
 let currentData = null;
 let currentPage = 1;
 const PAGE_SIZE = 1000;
-
-// Global chart variable
 let currentChart = null;
 
-// Table selection
 document.querySelectorAll('.table-card').forEach(card => {
     card.addEventListener('click', () => {
-        // Remove selected class from all cards
         document.querySelectorAll('.table-card').forEach(c => c.classList.remove('selected'));
-        // Add selected class to clicked card
         card.classList.add('selected');
         selectedTable = card.getAttribute('data-table');
-        // Show table data
         displayTableData(selectedTable);
         document.getElementById('table-data').classList.remove('hidden');
     });
@@ -56,14 +40,10 @@ document.getElementById('clear-selection').addEventListener('click', () => {
 document.querySelectorAll('.report-card').forEach(card => {
     card.addEventListener('click', () => {
         console.log('Report card clicked:', card.getAttribute('data-report'));
-        // Remove selected class from all cards
         document.querySelectorAll('.report-card').forEach(c => c.classList.remove('selected'));
-        // Add selected class to clicked card
         card.classList.add('selected');
         selectedReport = card.getAttribute('data-report');
         console.log('Selected report set to:', selectedReport);
-        
-        // Hide runtime log when switching reports
         document.getElementById('runtime-log').classList.add('hidden');
         
         // Show/hide filters based on report type
@@ -113,7 +93,6 @@ document.querySelectorAll('.report-card').forEach(card => {
             filtersDiv.classList.add('hidden');
         }
         
-        // Enable run button
         document.getElementById('run-query').disabled = false;
         console.log('Run button enabled');
     });
@@ -318,8 +297,6 @@ async function runReportQuery(reportType) {
                 data: data.map(row => Object.values(row))
             };
             displayQueryResults(tableInfo);
-            
-            // Display runtime log with server execution time
             displayRuntimeLog(serverExecutionTime);
         } else {
             throw new Error(responseData.error);
@@ -336,8 +313,6 @@ async function runReportQuery(reportType) {
         document.getElementById('compile-logs-container').prepend(compileLog);
     }
 }
-
-// Display runtime log
 function displayRuntimeLog(executionTime) {
     const runtimeLog = document.getElementById('runtime-log');
     const runtimeText = document.getElementById('runtime-text');
@@ -353,8 +328,6 @@ function displayRuntimeLog(executionTime) {
 async function displayTableData(tableName) {
     const tableInfo = await fetchTableData(tableName);
     if (!tableInfo) return;
-    
-    // Store data globally
     currentData = tableInfo;
     currentPage = 1;
 
@@ -364,12 +337,8 @@ async function displayTableData(tableName) {
 
     // Set table name
     tableNameElement.textContent = tableName;
-
-    // Clear existing content
     headers.innerHTML = '';
     body.innerHTML = '';
-
-    // Create headers
     const headerRow = document.createElement('tr');
     tableInfo.columns.forEach(column => {
         const th = document.createElement('th');
@@ -377,20 +346,17 @@ async function displayTableData(tableName) {
         headerRow.appendChild(th);
     });
     headers.appendChild(headerRow);
-
-    // Render first page
     renderPage(currentPage);
 }
 
-let isLoading = false; // Add loading state flag
+let isLoading = false;
 
 function handleScroll(e) {
     const container = e.target;
-    const scrollBuffer = 100; // Increase buffer zone
+    const scrollBuffer = 100;
     
     if (!isLoading && 
         container.scrollHeight - container.scrollTop - container.clientHeight < scrollBuffer) {
-        // Near bottom, load more data if available
         if (currentData && (currentPage * PAGE_SIZE) < currentData.data.length) {
             isLoading = true;
             currentPage++;
@@ -408,12 +374,10 @@ function renderPage(page) {
     const end = Math.min(start + PAGE_SIZE, currentData.data.length);
     const pageData = currentData.data.slice(start, end);
 
-    // Append new rows instead of clearing
     pageData.forEach(rowData => {
         const tr = document.createElement('tr');
         rowData.forEach(cellData => {
             const td = document.createElement('td');
-            // Format numbers to 2 decimal places if it's a float
             if (typeof cellData === 'number' && !Number.isInteger(cellData)) {
                 td.textContent = cellData.toFixed(2);
             } else {
@@ -423,25 +387,18 @@ function renderPage(page) {
         });
         body.appendChild(tr);
     });
-
-    // Update scroll event listener
     const tableContainer = document.querySelector('.table-responsive');
     tableContainer.onscroll = handleScroll;
 }
 
 function displayQueryResults(tableInfo) {
-    // Store data globally
     currentData = tableInfo;
     currentPage = 1;
     
     const headers = document.getElementById('report-headers');
     const body = document.getElementById('report-body');
-    
-    // Clear existing content
     headers.innerHTML = '';
     body.innerHTML = '';
-
-    // Create headers
     const headerRow = document.createElement('tr');
     tableInfo.columns.forEach(column => {
         const th = document.createElement('th');
@@ -449,14 +406,8 @@ function displayQueryResults(tableInfo) {
         headerRow.appendChild(th);
     });
     headers.appendChild(headerRow);
-
-    // Render first page
     renderPage(currentPage);
-
-    // Generate chart for the report
     generateChart(tableInfo);
-
-    // Show the report data section
     document.getElementById('report-data').classList.remove('hidden');
     
     if (selectedReport) {
@@ -466,24 +417,17 @@ function displayQueryResults(tableInfo) {
 }
 
 function generateChart(tableInfo) {
-    // Destroy previous chart if exists
     if (currentChart) {
         currentChart.destroy();
     }
-    
-    // Destroy comparison charts if they exist
     if (window.comparisonCharts) {
         window.comparisonCharts.forEach(chart => chart.destroy());
         window.comparisonCharts = [];
     }
-    
-    // Reset visibility - show single chart container, hide comparison
     document.querySelector('.chart-container').classList.remove('hidden');
     document.getElementById('comparison-charts-container').classList.add('hidden');
-
     const ctx = document.getElementById('report-chart').getContext('2d');
-    
-    // Different chart types for different reports
+
     switch(selectedReport) {
         case 'rollup':
             generateRollupChart(ctx, tableInfo);
@@ -504,7 +448,6 @@ function generateChart(tableInfo) {
 }
 
 function generateRollupChart(ctx, tableInfo) {
-    // Line chart for time hierarchy
     const labels = [];
     const amounts = [];
     const counts = [];
@@ -577,12 +520,11 @@ function generateRollupChart(ctx, tableInfo) {
 }
 
 function generateDrilldownChart(ctx, tableInfo) {
-    // Bar chart for district breakdown
     const districtData = {};
     
     tableInfo.data.forEach(row => {
-        const district = row[1]; // district_name is in column 1
-        const amount = parseFloat(row[4]) || 0; // total_amount is in column 4
+        const district = row[1];
+        const amount = parseFloat(row[4]) || 0;
         if (!districtData[district]) {
             districtData[district] = 0;
         }
@@ -591,7 +533,7 @@ function generateDrilldownChart(ctx, tableInfo) {
 
     // Sort districts by amount and get all of them (or limit if too many)
     const sortedDistricts = Object.entries(districtData)
-        .sort((a, b) => b[1] - a[1]); // Sort by amount descending
+        .sort((a, b) => b[1] - a[1]);
     
     const labels = sortedDistricts.map(entry => entry[0]);
     const data = sortedDistricts.map(entry => entry[1]);
@@ -637,11 +579,7 @@ function generateDrilldownChart(ctx, tableInfo) {
 }
 
 function generateSliceChart(ctx, tableInfo) {
-    // Pie chart for transaction types
-    // Get selected metric from the dropdown
     const selectedMetric = document.getElementById('slice-metric').value || 'transaction_count';
-    
-    // Check if user wants to see all metrics in comparison view
     if (selectedMetric === 'all') {
         generateSliceComparisonCharts(tableInfo);
         return;
@@ -650,8 +588,6 @@ function generateSliceChart(ctx, tableInfo) {
     const labels = tableInfo.data.map(row => row[0]);
     let data;
     let chartTitle;
-    
-    // Map metric to column index and title
     switch(selectedMetric) {
         case 'transaction_count':
             data = tableInfo.data.map(row => parseInt(row[1]) || 0);
@@ -720,7 +656,7 @@ function generateSliceChart(ctx, tableInfo) {
                     formatter: (value, context) => {
                         const total = context.dataset.data.reduce((a, b) => a + b, 0);
                         const percentage = ((value / total) * 100).toFixed(1);
-                        return percentage > 3 ? `${percentage}%` : '';  // Only show if > 3%
+                        return percentage > 3 ? `${percentage}%` : '';
                     },
                     anchor: 'center',
                     align: 'center'
@@ -732,7 +668,6 @@ function generateSliceChart(ctx, tableInfo) {
 }
 
 function generateSliceComparisonCharts(tableInfo) {
-    // Hide single chart container, show comparison container
     document.querySelector('.chart-container').classList.add('hidden');
     document.getElementById('comparison-charts-container').classList.remove('hidden');
     
@@ -760,13 +695,11 @@ function generateSliceComparisonCharts(tableInfo) {
         }
     ];
     
-    // Destroy existing comparison charts if they exist
     if (window.comparisonCharts) {
         window.comparisonCharts.forEach(chart => chart.destroy());
     }
     window.comparisonCharts = [];
-    
-    // Create three pie charts without individual legends
+
     metrics.forEach(metric => {
         const ctx = document.getElementById(metric.canvasId).getContext('2d');
         const chart = new Chart(ctx, {
@@ -792,7 +725,7 @@ function generateSliceComparisonCharts(tableInfo) {
                         padding: { bottom: 20 }
                     },
                     legend: {
-                        display: false  // Hide individual legends
+                        display: false
                     },
                     tooltip: {
                         callbacks: {
@@ -814,7 +747,7 @@ function generateSliceComparisonCharts(tableInfo) {
                         formatter: (value, context) => {
                             const total = context.dataset.data.reduce((a, b) => a + b, 0);
                             const percentage = ((value / total) * 100).toFixed(1);
-                            return percentage > 3 ? `${percentage}%` : '';  // Only show if > 3%
+                            return percentage > 3 ? `${percentage}%` : '';
                         },
                         anchor: 'center',
                         align: 'center'
@@ -848,14 +781,10 @@ function generateSliceComparisonCharts(tableInfo) {
 }
 
 function generateDiceChart(ctx, tableInfo) {
-    // Grouped bar chart for multi-dimensional analysis by transaction type
-    
-    // Check if we have multiple transaction types (All Types selected)
     const transTypes = [...new Set(tableInfo.data.map(row => row[2]))];
     const hasMultipleTypes = transTypes.length > 1;
     
     if (hasMultipleTypes) {
-        // Group data by region-year and transaction type
         const regionYearData = {};
         
         tableInfo.data.forEach(row => {
@@ -874,10 +803,8 @@ function generateDiceChart(ctx, tableInfo) {
             }
         });
         
-        // Get unique labels (region-year combinations)
         const labels = Object.keys(regionYearData).slice(0, 10);
         
-        // Prepare datasets for each transaction type
         const datasets = [
             {
                 label: 'CREDIT',
@@ -935,7 +862,6 @@ function generateDiceChart(ctx, tableInfo) {
             }
         });
     } else {
-        // Single transaction type selected - show simple bar chart
         const regionYearData = {};
         
         tableInfo.data.forEach(row => {
@@ -998,7 +924,6 @@ function generateDiceChart(ctx, tableInfo) {
 }
 
 function generatePivotChart(ctx, tableInfo) {
-    // Stacked bar chart for inflow vs outflow
     const regionData = {};
     
     tableInfo.data.forEach(row => {
