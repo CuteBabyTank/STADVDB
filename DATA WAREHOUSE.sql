@@ -80,7 +80,6 @@ CREATE TABLE `dim_card` (
     issued_date DATE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-
 -- FACT TABLE
 DROP TABLE IF EXISTS `fact_orders`;
 CREATE TABLE `fact_orders` (
@@ -111,3 +110,13 @@ CREATE TABLE `fact_trans`(
     FOREIGN KEY (account_key) REFERENCES dim_account(account_key),
     FOREIGN KEY (trans_date_key) REFERENCES dim_date(date_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX idx_fact_account_date_type ON fact_trans(account_key, trans_date_key, trans_type, amount);
+CREATE INDEX idx_fact_trans_keys ON fact_trans (account_key, trans_date_key, trans_type, amount);
+
+CREATE INDEX idx_trans_date_key ON fact_trans(trans_date_key); 
+CREATE INDEX idx_date_year_month ON dim_date(year, month, date_key);
+CREATE INDEX idx_date_year ON dim_date(year);
+
+CREATE INDEX idx_account_district ON dim_account(district_key);
+CREATE INDEX idx_district_region ON dim_district(region);
