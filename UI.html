@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Data Warehouse Operations</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-database"></i>
+                    <div>
+                        <h1>Bank Data Warehouse</h1>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div class="tabs">
+            <div class="tab active" data-tab="tables">
+                Tables
+            </div>
+            <div class="tab" data-tab="reports">
+                Reports
+            </div>
+        </div>
+        <!-- Tables View -->
+        <div id="tables-view" class="tab-content">
+            <div class="tables-grid">
+                <!-- Dimension Tables -->
+                <div class="table-card" data-table="dim_date">
+                    <div class="table-header">
+                        <div class="table-info">
+                            <div class="table-name">dim_date</div>
+                            <div class="table-type">Dimension</div>
+                        </div>
+                    </div>
+                    <div class="table-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Columns:</span>
+                            <span class="detail-value">7</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Type:</span>
+                            <span class="detail-value">Date</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-card" data-table="dim_district">
+                    <div class="table-header">
+                        <div class="table-info">
+                            <div class="table-name">dim_district</div>
+                            <div class="table-type">Dimension</div>
+                        </div>
+                    </div>
+                    <div class="table-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Columns:</span>
+                            <span class="detail-value">11</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Type:</span>
+                            <span class="detail-value">District</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-card" data-table="dim_client">
+                    <div class="table-header">
+                        <div class="table-info">
+                            <div class="table-name">dim_client</div>
+                            <div class="table-type">Dimension</div>
+                        </div>
+                    </div>
+                    <div class="table-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Columns:</span>
+                            <span class="detail-value">3</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Type:</span>
+                            <span class="detail-value">Customer</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-card" data-table="dim_account">
+                    <div class="table-header">
+                        <div class="table-info">
+                            <div class="table-name">dim_account</div>
+                            <div class="table-type">Dimension</div>
+                        </div>
+                    </div>
+                    <div class="table-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Columns:</span>
+                            <span class="detail-value">5</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Type:</span>
+                            <span class="detail-value">Account</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-card" data-table="dim_loan">
+                    <div class="table-header">
+                        <div class="table-info">
+                            <div class="table-name">dim_loan</div>
+                            <div class="table-type">Dimension</div>
+                        </div>
+                    </div>
+                    <div class="table-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Columns:</span>
+                            <span class="detail-value">8</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Type:</span>
+                            <span class="detail-value">Loan</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-card" data-table="dim_card">
+                    <div class="table-header">
+                        <div class="table-info">
+                            <div class="table-name">dim_card</div>
+                            <div class="table-type">Dimension</div>
+                        </div>
+                    </div>
+                    <div class="table-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Columns:</span>
+                            <span class="detail-value">4</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Type:</span>
+                            <span class="detail-value">Card</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Fact Tables -->
+                <div class="table-card" data-table="fact_orders">
+                    <div class="table-header">
+                        <div class="table-info">
+                            <div class="table-name">fact_orders</div>
+                            <div class="table-type">Fact</div>
+                        </div>
+                    </div>
+                    <div class="table-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Columns:</span>
+                            <span class="detail-value">7</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Type:</span>
+                            <span class="detail-value">Transaction</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-card" data-table="fact_trans">
+                    <div class="table-header">
+                        <div class="table-info">
+                            <div class="table-name">fact_trans</div>
+                            <div class="table-type">Fact</div>
+                        </div>
+                    </div>
+                    <div class="table-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Columns:</span>
+                            <span class="detail-value">11</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Type:</span>
+                            <span class="detail-value">Transaction</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Selected Table Data -->
+            <div id="table-data" class="table-data hidden">
+                <div class="table-data-header">
+                    <div class="table-data-title">
+                        <span id="selected-table-name">Table Name</span> Data
+                    </div>
+                    <button class="clear-btn" id="clear-selection">Clear Selection</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table" id="data-table-content">
+                        <thead id="table-headers">
+                            <!-- Headers will be populated by JS -->
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- Data will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Reports View -->
+        <div id="reports-view" class="tab-content hidden">
+            <div class="reports-grid">
+                <div class="report-card" data-report="rollup">
+                    <div class="report-header">
+                        <div class="report-number">1</div>
+                        <div class="report-title">Yearly to Monthly Transaction Summary</div>
+                    </div>
+                    <div class="report-description">
+                        Aggregates transaction data from monthly to quarterly to yearly levels with hierarchical grouping (WITH ROLLUP). Filter by year range, region, and transaction type.
+                    </div>
+                </div>
+                <div class="report-card" data-report="drilldown">
+                    <div class="report-header">
+                        <div class="report-number">2</div>
+                        <div class="report-title">Regional and Account-Level Transaction Breakdown</div>
+                    </div>
+                    <div class="report-description">
+                        Navigates from higher-level regional summaries down to detailed district-level transaction data. Filter by year range, specific region, or district for detailed analysis.
+                    </div>
+                </div>
+                <div class="report-card" data-report="slice">
+                    <div class="report-header">
+                        <div class="report-number">3</div>
+                        <div class="report-title">Transaction Analysis by Type</div>
+                    </div>
+                    <div class="report-description">
+                        Extracts a specific subset of data by isolating top transaction types. Filter by year range to analyze transaction type distributions across different time periods.
+                    </div>
+                </div>
+                <div class="report-card" data-report="dice">
+                    <div class="report-header">
+                        <div class="report-number">4</div>
+                        <div class="report-title">Regional and Yearly Transaction Patterns</div>
+                    </div>
+                    <div class="report-description">
+                        Performs multi-dimensional filtering across region, year, and transaction type dimensions. Select specific combinations to analyze targeted data cubes.
+                    </div>
+                </div>
+                <div class="report-card" data-report="pivot">
+                    <div class="report-header">
+                        <div class="report-number">5</div>
+                        <div class="report-title">Monthly Inflow vs Outflow by Region</div>
+                    </div>
+                    <div class="report-description">
+                        Rotates data perspective to compare credit (inflow) vs debit/withdrawal (outflow) transactions across regions and months. Filter by year range for focused comparison.
+                    </div>
+                </div>
+            </div>
+            <!-- Filter Controls -->
+            <div id="report-filters" class="report-filters hidden">
+                <!-- Drilldown Filter -->
+                <div id="drilldown-filter" class="filter-group-row hidden">
+                    <div class="filter-group">
+                        <label for="drilldown-from-year">From Year:</label>
+                        <select id="drilldown-from-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="drilldown-to-year">To Year:</label>
+                        <select id="drilldown-to-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="drilldown-region">Region:</label>
+                        <select id="drilldown-region" class="filter-select">
+                            <option value="">All Regions</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="drilldown-district">District:</label>
+                        <select id="drilldown-district" class="filter-select">
+                            <option value="">All Districts</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Rollup Filter -->
+                <div id="rollup-filter" class="filter-group-row hidden">
+                    <div class="filter-group">
+                        <label for="from-year-filter">From Year:</label>
+                        <select id="from-year-filter" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="to-year-filter">To Year:</label>
+                        <select id="to-year-filter" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="rollup-quarter">Quarter:</label>
+                        <select id="rollup-quarter" class="filter-select">
+                            <option value="">All Quarters</option>
+                            <option value="1">Q1</option>
+                            <option value="2">Q2</option>
+                            <option value="3">Q3</option>
+                            <option value="4">Q4</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Slice Filter -->
+                <div id="slice-filter" class="filter-group-row hidden">
+                    <div class="filter-group">
+                        <label for="slice-from-year">From Year:</label>
+                        <select id="slice-from-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="slice-to-year">To Year:</label>
+                        <select id="slice-to-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="slice-metric">Display Metric:</label>
+                        <select id="slice-metric" class="filter-select">
+                            <option value="all">All Metrics (Comparison)</option>
+                            <option value="transaction_count">Transaction Count</option>
+                            <option value="total_amount">Total Amount</option>
+                            <option value="average_amount">Average Amount</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Dice Filter -->
+                <div id="dice-filter" class="filter-group-row hidden">
+                    <div class="filter-group">
+                        <label for="dice-from-year">From Year:</label>
+                        <select id="dice-from-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="dice-to-year">To Year:</label>
+                        <select id="dice-to-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="dice-trans-type">Transaction Type:</label>
+                        <select id="dice-trans-type" class="filter-select">
+                            <option value="">All Types</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Pivot Filter -->
+                <div id="pivot-filter" class="filter-group-row hidden">
+                    <div class="filter-group">
+                        <label for="pivot-from-year">From Year:</label>
+                        <select id="pivot-from-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="pivot-to-year">To Year:</label>
+                        <select id="pivot-to-year" class="filter-select">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <button class="run-btn" id="run-query" disabled>
+                Run Query
+            </button>
+            <!-- Runtime Log Display -->
+            <div id="runtime-log" class="runtime-log hidden">
+                <i class="fas fa-clock"></i>
+                <span id="runtime-text">Query executed in 0.00 seconds</span>
+            </div>
+            <!-- Add table data container for reports -->
+            <div id="report-data" class="table-data hidden">
+                <div class="table-data-header">
+                    <div class="table-data-title">
+                        <span id="selected-report-name">Report Results</span>
+                    </div>
+                </div>
+                <!-- Chart Container -->
+                <div class="chart-container">
+                    <canvas id="report-chart"></canvas>
+                </div>
+                <!-- Multiple Charts Container (for comparison view) -->
+                <div id="comparison-charts-container" class="comparison-charts-container hidden">
+                    <div class="comparison-charts-row">
+                        <div class="comparison-chart-wrapper">
+                            <canvas id="comparison-chart-1"></canvas>
+                        </div>
+                        <div class="comparison-chart-wrapper">
+                            <canvas id="comparison-chart-2"></canvas>
+                        </div>
+                        <div class="comparison-chart-wrapper">
+                            <canvas id="comparison-chart-3"></canvas>
+                        </div>
+                    </div>
+                    <div class="comparison-legend-container">
+                        <div id="comparison-legend" class="comparison-legend">
+                            <!-- Legend will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table" id="report-table-content">
+                        <thead id="report-headers">
+                            <!-- Headers will be populated by JS -->
+                        </thead>
+                        <tbody id="report-body">
+                            <!-- Data will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Compile Time Errors View -->
+        <div id="compile-view" class="tab-content hidden">
+            <div class="compile-logs">
+                <div class="compile-header">
+                    <i class="fas fa-code" style="color: var(--danger);"></i>
+                    <div class="compile-title">Compile Time Error Logs</div>
+                </div>
+                <div id="compile-logs-container">
+                    <div class="compile-log">
+                        <div class="compile-timestamp">2024-01-15 14:32:18 UTC</div>
+                        <div class="compile-message">ERROR 1072 (42000): Key column 'district_key' doesn't exist in table 'dim_client'</div>
+                    </div>
+                    <div class="compile-log">
+                        <div class="compile-timestamp">2024-01-15 13:45:02 UTC</div>
+                        <div class="compile-message">ERROR 1061 (42000): Duplicate key name 'account_id' in table 'dim_account'</div>
+                    </div>
+                    <div class="compile-log">
+                        <div class="compile-timestamp">2024-01-15 12:18:33 UTC</div>
+                        <div class="compile-message">ERROR 1215 (HY000): Cannot add foreign key constraint 'fact_trans_ibfk_1' - referenced table 'dim_account' not found</div>
+                    </div>
+                    <div class="compile-log">
+                        <div class="compile-timestamp">2024-01-15 11:05:47 UTC</div>
+                        <div class="compile-message">ERROR 1064 (42000): You have an error in your SQL syntax near 'FOREIGN KEY (trans_date_key) REFERENCES dim_date(date_key)'</div>
+                    </div>
+                    <div class="compile-log">
+                        <div class="compile-timestamp">2024-01-15 10:22:15 UTC</div>
+                        <div class="compile-message">ERROR 1146 (42000): Table 'financedata.trans' doesn't exist - referenced in dim_date population query</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
